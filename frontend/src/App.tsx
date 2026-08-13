@@ -7,31 +7,55 @@ import Roles from "./pages/Roles";
 import Permissions from "./pages/Permissions";
 
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+import PermissionRoute from "./components/ProtectedRoute/PermissionRoute";
 import MainLayout from "./layouts/MainLayout";
-import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public */}
-          <Route path="/login" element={<Login />} />
+    <BrowserRouter>
+      <Routes>
+        {/* =========================
+            PUBLIC ROUTES
+        ========================== */}
+        <Route path="/login" element={<Login />} />
 
-          {/* Protected */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<MainLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
+        {/* =========================
+            AUTHENTICATED ROUTES
+        ========================== */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<MainLayout />}>
+            {/* Dashboard */}
+            <Route path="/dashboard" element={<Dashboard />} />
+
+            {/* =========================
+                USERS
+            ========================== */}
+            <Route element={<PermissionRoute permission="users.view" />}>
               <Route path="/users" element={<Users />} />
+            </Route>
+
+            {/* =========================
+                ROLES
+            ========================== */}
+            <Route element={<PermissionRoute permission="roles.view" />}>
               <Route path="/roles" element={<Roles />} />
+            </Route>
+
+            {/* =========================
+                PERMISSIONS
+            ========================== */}
+            <Route element={<PermissionRoute permission="permissions.view" />}>
               <Route path="/permissions" element={<Permissions />} />
             </Route>
           </Route>
+        </Route>
 
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+        {/* =========================
+            FALLBACK
+        ========================== */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

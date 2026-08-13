@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -10,6 +9,9 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
+    /**
+     * Menampilkan semua user.
+     */
     public function index()
     {
         return response()->json(
@@ -17,6 +19,9 @@ class UserController extends Controller
         );
     }
 
+    /**
+     * Menampilkan detail user.
+     */
     public function show(User $user)
     {
         return response()->json(
@@ -24,13 +29,34 @@ class UserController extends Controller
         );
     }
 
+    /**
+     * Membuat user baru.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role_id' => ['nullable', 'exists:roles,id'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email',
+            ],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
+            'role_id' => [
+                'nullable',
+                'integer',
+                'exists:roles,id',
+            ],
         ]);
 
         $user = User::create([
@@ -39,27 +65,40 @@ class UserController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        if (!empty($validated['role_id'])) {
-            $user->roles()->sync([$validated['role_id']]);
+        if ($request->filled('role_id')) {
+            $user->roles()->sync([
+                $validated['role_id'],
+            ]);
         }
 
         return response()->json([
             'message' => 'User berhasil dibuat',
-            'user' => $user->load('roles'),
+            'user' => $user->fresh()->load('roles'),
         ], 201);
     }
 
+    /**
+     * Mengubah user.
+     */
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
             'email' => [
                 'required',
                 'email',
                 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
-            'role_id' => ['nullable', 'exists:roles,id'],
+            'role_id' => [
+                'nullable',
+                'integer',
+                'exists:roles,id',
+            ],
         ]);
 
         $user->update([
@@ -67,8 +106,17 @@ class UserController extends Controller
             'email' => $validated['email'],
         ]);
 
+        /*
+         * User hanya memiliki satu role.
+         *
+         * Jika role_id dikirim:
+         *   role lama diganti dengan role baru.
+         *
+         * Jika role_id null:
+         *   semua role user dihapus.
+         */
         $user->roles()->sync(
-            !empty($validated['role_id'])
+            $request->filled('role_id')
                 ? [$validated['role_id']]
                 : []
         );
@@ -79,6 +127,9 @@ class UserController extends Controller
         ]);
     }
 
+    /**
+     * Menghapus user.
+     */
     public function destroy(User $user)
     {
         $user->delete();

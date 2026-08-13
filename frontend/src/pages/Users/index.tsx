@@ -14,18 +14,28 @@ interface User {
   roles: Role[];
 }
 
+interface UserForm {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+  role_id: string;
+}
+
 function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<UserForm>({
     name: "",
     email: "",
     password: "",
@@ -33,35 +43,55 @@ function Users() {
     role_id: "",
   });
 
+  /**
+   * Mengambil semua user.
+   */
   const fetchUsers = async () => {
     try {
       setError("");
 
       const response = await api.get("/users");
+
+      console.log("USERS DARI API:", response.data);
+
       setUsers(response.data);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Gagal mengambil users:", err);
-      setError("Gagal mengambil data users.");
+
+      setError(err.response?.data?.message || "Gagal mengambil data users.");
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Mengambil semua role.
+   */
   const fetchRoles = async () => {
     try {
       const response = await api.get("/roles");
+
+      console.log("ROLES DARI API:", response.data);
+
       setRoles(response.data);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Gagal mengambil roles:", err);
-      setError("Gagal mengambil data roles.");
+
+      setError(err.response?.data?.message || "Gagal mengambil data roles.");
     }
   };
 
   useEffect(() => {
-    fetchUsers();
-    fetchRoles();
+    const initialize = async () => {
+      await Promise.all([fetchUsers(), fetchRoles()]);
+    };
+
+    initialize();
   }, []);
 
+  /**
+   * Reset form.
+   */
   const resetForm = () => {
     setForm({
       name: "",
@@ -74,12 +104,21 @@ function Users() {
     setEditingUser(null);
   };
 
+  /**
+   * Membuka modal tambah user.
+   */
   const handleAdd = () => {
     resetForm();
     setShowModal(true);
   };
 
+  /**
+   * Membuka modal edit user.
+   */
   const handleEdit = (user: User) => {
+    console.log("USER YANG DI-EDIT:", user);
+    console.log("ROLES USER:", user.roles);
+
     setEditingUser(user);
 
     setForm({
@@ -93,6 +132,9 @@ function Users() {
     setShowModal(true);
   };
 
+  /**
+   * Menghapus user.
+   */
   const handleDelete = async (user: User) => {
     const confirmed = window.confirm(
       `Yakin ingin menghapus user "${user.name}"?`,
@@ -124,6 +166,9 @@ function Users() {
     }
   };
 
+  /**
+   * Submit tambah / edit user.
+   */
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -132,24 +177,33 @@ function Users() {
       setError("");
 
       if (editingUser) {
-        await api.put(`/users/${editingUser.id}`, {
+        const response = await api.put(`/users/${editingUser.id}`, {
           name: form.name,
           email: form.email,
           role_id: form.role_id ? Number(form.role_id) : null,
         });
+
+        console.log("HASIL UPDATE USER:", response.data);
       } else {
-        await api.post("/users", {
+        const response = await api.post("/users", {
           name: form.name,
           email: form.email,
           password: form.password,
           password_confirmation: form.password_confirmation,
           role_id: form.role_id ? Number(form.role_id) : null,
         });
+
+        console.log("HASIL CREATE USER:", response.data);
       }
 
-      resetForm();
       setShowModal(false);
+      resetForm();
 
+      /*
+       * Ambil ulang data dari backend
+       * supaya state frontend benar-benar
+       * mengikuti database.
+       */
       await fetchUsers();
     } catch (err: any) {
       console.error("Gagal menyimpan user:", err);
@@ -166,12 +220,20 @@ function Users() {
     }
   };
 
+  /**
+   * Loading.
+   */
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="p-6">
+        <p className="text-sm text-gray-500">Loading...</p>
+      </div>
+    );
   }
 
   return (
     <div>
+      {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-black">Users</h1>
@@ -187,12 +249,14 @@ function Users() {
         </button>
       </div>
 
+      {/* Error */}
       {error && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
           {error}
         </div>
       )}
 
+      {/* Table */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <table className="w-full text-left">
           <thead className="border-b border-gray-200 bg-gray-50">
@@ -216,58 +280,75 @@ function Users() {
           </thead>
 
           <tbody>
-            {users.map((user) => (
-              <tr
-                key={user.id}
-                className="border-b border-gray-100 last:border-0"
-              >
-                <td className="px-6 py-4 text-sm text-black">{user.name}</td>
+            {users.map((user) => {
+              const userRoles = Array.isArray(user.roles) ? user.roles : [];
 
-                <td className="px-6 py-4 text-sm text-gray-600">
-                  {user.email}
-                </td>
+              return (
+                <tr
+                  key={user.id}
+                  className="border-b border-gray-100 last:border-0"
+                >
+                  <td className="px-6 py-4 text-sm text-black">{user.name}</td>
 
-                <td className="px-6 py-4">
-                  {user.roles.length > 0 ? (
-                    user.roles.map((role) => (
-                      <span
-                        key={role.id}
-                        className="mr-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-black"
-                      >
-                        {role.name}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-sm text-gray-400">No role</span>
-                  )}
-                </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {user.email}
+                  </td>
 
-                <td className="px-6 py-4">
-                  <button
-                    onClick={() => handleEdit(user)}
-                    disabled={deleting === user.id}
-                    className="mr-3 text-sm font-medium text-black hover:underline disabled:opacity-50"
-                  >
-                    Edit
-                  </button>
+                  <td className="px-6 py-4">
+                    {userRoles.length > 0 ? (
+                      userRoles.map((role) => (
+                        <span
+                          key={role.id}
+                          className="mr-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-black"
+                        >
+                          {role.name}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-sm text-gray-400">No role</span>
+                    )}
+                  </td>
 
-                  <button
-                    onClick={() => handleDelete(user)}
-                    disabled={deleting === user.id}
-                    className="text-sm font-medium text-red-600 hover:underline disabled:opacity-50"
-                  >
-                    {deleting === user.id ? "Deleting..." : "Delete"}
-                  </button>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => handleEdit(user)}
+                      disabled={deleting === user.id}
+                      className="mr-3 text-sm font-medium text-black hover:underline disabled:opacity-50"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(user)}
+                      disabled={deleting === user.id}
+                      className="text-sm font-medium text-red-600 hover:underline disabled:opacity-50"
+                    >
+                      {deleting === user.id ? "Deleting..." : "Delete"}
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+
+            {users.length === 0 && (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="px-6 py-8 text-center text-sm text-gray-400"
+                >
+                  Belum ada user.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
 
+      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            {/* Modal Header */}
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-black">
                 {editingUser ? "Edit User" : "Add User"}
@@ -284,6 +365,7 @@ function Users() {
               </button>
             </div>
 
+            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Name */}
               <div>
@@ -294,10 +376,10 @@ function Users() {
                 <input
                   type="text"
                   value={form.name}
-                  onChange={(e) =>
+                  onChange={(event) =>
                     setForm({
                       ...form,
-                      name: e.target.value,
+                      name: event.target.value,
                     })
                   }
                   required
@@ -314,10 +396,10 @@ function Users() {
                 <input
                   type="email"
                   value={form.email}
-                  onChange={(e) =>
+                  onChange={(event) =>
                     setForm({
                       ...form,
-                      email: e.target.value,
+                      email: event.target.value,
                     })
                   }
                   required
@@ -333,10 +415,10 @@ function Users() {
 
                 <select
                   value={form.role_id}
-                  onChange={(e) =>
+                  onChange={(event) =>
                     setForm({
                       ...form,
-                      role_id: e.target.value,
+                      role_id: event.target.value,
                     })
                   }
                   className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-black"
@@ -351,7 +433,7 @@ function Users() {
                 </select>
               </div>
 
-              {/* Password hanya saat Add */}
+              {/* Password */}
               {!editingUser && (
                 <>
                   <div>
@@ -362,10 +444,10 @@ function Users() {
                     <input
                       type="password"
                       value={form.password}
-                      onChange={(e) =>
+                      onChange={(event) =>
                         setForm({
                           ...form,
-                          password: e.target.value,
+                          password: event.target.value,
                         })
                       }
                       required
@@ -383,10 +465,10 @@ function Users() {
                     <input
                       type="password"
                       value={form.password_confirmation}
-                      onChange={(e) =>
+                      onChange={(event) =>
                         setForm({
                           ...form,
-                          password_confirmation: e.target.value,
+                          password_confirmation: event.target.value,
                         })
                       }
                       required
