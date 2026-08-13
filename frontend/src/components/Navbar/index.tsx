@@ -1,28 +1,26 @@
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 function Navbar() {
-  const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
-
-    navigate("/login", { replace: true });
   };
 
   return (
     <nav className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6">
+      {/* Brand */}
       <h1 className="text-xl font-bold text-black">Project Magang</h1>
 
+      {/* User */}
       <div className="flex items-center gap-4">
-        <button
-          type="button"
-          onClick={() => navigate("/profile")}
-          className="cursor-pointer text-sm font-medium text-black hover:underline"
-        >
-          {user?.name || "User"}
-        </button>
+        <div className="text-right">
+          <p className="text-sm font-semibold text-black">
+            {user?.name || "User"}
+          </p>
+
+          <p className="text-xs text-gray-500">{user?.email || ""}</p>
+        </div>
 
         <button
           type="button"

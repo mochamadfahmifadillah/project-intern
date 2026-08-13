@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -134,6 +136,41 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Password berhasil diperbarui.',
+        ]);
+    }
+
+    /**
+     * Dashboard statistics.
+     */
+    public function dashboard(Request $request)
+    {
+        $user = $request->user();
+
+        $user->load([
+            'roles.permissions',
+        ]);
+
+        $permissions = $user->roles
+            ->flatMap(function ($role) {
+                return $role->permissions;
+            })
+            ->pluck('name')
+            ->unique();
+
+        return response()->json([
+            'statistics' => [
+                'users' => $permissions->contains('users.view')
+                    ? User::count()
+                    : null,
+
+                'roles' => $permissions->contains('roles.view')
+                    ? Role::count()
+                    : null,
+
+                'permissions' => $permissions->contains('permissions.view')
+                    ? Permission::count()
+                    : null,
+            ],
         ]);
     }
 

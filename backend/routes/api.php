@@ -22,6 +22,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Current user
     Route::get('/user', [AuthController::class, 'user']);
 
+    // Dashboard Statistics
+    Route::get('/dashboard', [AuthController::class, 'dashboard']);
+
     // Update Password
     Route::put('/user/password', [AuthController::class, 'updatePassword']);
 
