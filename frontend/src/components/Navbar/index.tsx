@@ -10,7 +10,7 @@ function Navbar() {
   return (
     <nav className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6">
       {/* Brand */}
-      <h1 className="text-xl font-bold text-black">Project Magang</h1>
+      <h1 className="text-xl font-bold text-black">Software Empire</h1>
 
       {/* User */}
       <div className="flex items-center gap-4">

@@ -105,7 +105,7 @@ function Sidebar() {
         {/* Bottom Info */}
         <div className="mt-auto pt-6">
           <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-3">
-            <p className="text-xs font-medium text-gray-700">Project Magang</p>
+            <p className="text-xs font-medium text-gray-700">Software Empire</p>
 
             <p className="mt-0.5 text-[11px] text-gray-400">
               Administration Panel
