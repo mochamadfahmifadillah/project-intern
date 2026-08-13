@@ -1,20 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import api from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 
 function Navbar() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const handleLogout = async () => {
-    try {
-      await api.post("/logout");
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      localStorage.removeItem("token");
-      delete api.defaults.headers.common.Authorization;
+    await logout();
 
-      navigate("/login", { replace: true });
-    }
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -22,9 +16,16 @@ function Navbar() {
       <h1 className="text-xl font-bold text-black">Project Magang</h1>
 
       <div className="flex items-center gap-4">
-        <span className="text-sm font-medium text-black">Admin</span>
+        <button
+          type="button"
+          onClick={() => navigate("/profile")}
+          className="cursor-pointer text-sm font-medium text-black hover:underline"
+        >
+          {user?.name || "User"}
+        </button>
 
         <button
+          type="button"
           onClick={handleLogout}
           className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-800"
         >

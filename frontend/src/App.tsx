@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import Login from "./pages/Login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
+import Profile from "./pages/Profile";
 import Users from "./pages/Users";
 import Roles from "./pages/Roles";
 import Permissions from "./pages/Permissions";
@@ -26,6 +27,9 @@ function App() {
           <Route element={<MainLayout />}>
             {/* Dashboard */}
             <Route path="/dashboard" element={<Dashboard />} />
+
+            {/* Profile */}
+            <Route path="/profile" element={<Profile />} />
 
             {/* =========================
                 USERS
