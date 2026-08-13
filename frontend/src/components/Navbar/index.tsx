@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 function Navbar() {
@@ -14,13 +15,16 @@ function Navbar() {
 
       {/* User */}
       <div className="flex items-center gap-4">
-        <div className="text-right">
+        <Link
+          to="/profile"
+          className="text-right transition-opacity hover:opacity-70"
+        >
           <p className="text-sm font-semibold text-black">
             {user?.name || "User"}
           </p>
 
           <p className="text-xs text-gray-500">{user?.email || ""}</p>
-        </div>
+        </Link>
 
         <button
           type="button"
