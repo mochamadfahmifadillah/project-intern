@@ -1,32 +1,24 @@
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (event: FormEvent) => {
+  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setError("");
     setLoading(true);
 
     try {
-      const response = await api.post("/login", {
-        email,
-        password,
-      });
-
-      const token = response.data.token;
-
-      localStorage.setItem("token", token);
-
-      api.defaults.headers.common.Authorization = `Bearer ${token}`;
+      await login(email, password);
 
       navigate("/dashboard");
     } catch (error: any) {
