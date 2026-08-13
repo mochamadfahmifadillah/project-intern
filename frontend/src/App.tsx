@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
+import Landing from "./pages/Landing/Landing";
 import Login from "./pages/Login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Profile from "./pages/Profile";
@@ -18,6 +19,11 @@ function App() {
         {/* =========================
             PUBLIC ROUTES
         ========================== */}
+
+        {/* Landing Page */}
+        <Route path="/" element={<Landing />} />
+
+        {/* Login */}
         <Route path="/login" element={<Login />} />
 
         {/* =========================
@@ -57,7 +63,7 @@ function App() {
         {/* =========================
             FALLBACK
         ========================== */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
