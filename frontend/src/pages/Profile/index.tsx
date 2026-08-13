@@ -1,4 +1,13 @@
 import { FormEvent, useMemo, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCircleCheck,
+  faCircleExclamation,
+  faEye,
+  faEyeSlash,
+  faLock,
+} from "@fortawesome/free-solid-svg-icons";
+
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 
@@ -69,6 +78,10 @@ function Profile() {
       setCurrentPassword("");
       setPassword("");
       setPasswordConfirmation("");
+
+      setShowCurrentPassword(false);
+      setShowPassword(false);
+      setShowPasswordConfirmation(false);
     } catch (err: any) {
       console.error("Gagal mengubah password:", err);
 
@@ -94,7 +107,9 @@ function Profile() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      {/* Page Header */}
+      {/* =========================
+          PAGE HEADER
+      ========================== */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight text-black">
           Profile
@@ -106,11 +121,13 @@ function Profile() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Account Information */}
+        {/* =========================
+            ACCOUNT INFORMATION
+        ========================== */}
         <div className="lg:col-span-1">
           <div className="rounded-2xl border border-gray-200 bg-white p-6">
+            {/* Avatar */}
             <div className="flex flex-col items-center text-center">
-              {/* Avatar */}
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-black text-2xl font-semibold text-white">
                 {getInitial()}
               </div>
@@ -128,6 +145,7 @@ function Profile() {
 
             {/* Account Details */}
             <div className="space-y-5">
+              {/* Name */}
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
                   Name
@@ -138,6 +156,7 @@ function Profile() {
                 </p>
               </div>
 
+              {/* Email */}
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
                   Email
@@ -148,6 +167,7 @@ function Profile() {
                 </p>
               </div>
 
+              {/* Role */}
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
                   Role
@@ -172,23 +192,19 @@ function Profile() {
           </div>
         </div>
 
-        {/* Change Password */}
+        {/* =========================
+            CHANGE PASSWORD
+        ========================== */}
         <div className="lg:col-span-2">
           <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-7">
             {/* Section Header */}
             <div className="mb-6">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
-                  <svg
+                  <FontAwesomeIcon
+                    icon={faLock}
                     className="h-5 w-5 text-gray-700"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  >
-                    <rect x="4" y="10" width="16" height="10" rx="2" />
-                    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-                  </svg>
+                  />
                 </div>
 
                 <div>
@@ -203,54 +219,44 @@ function Profile() {
               </div>
             </div>
 
-            {/* Success */}
+            {/* =========================
+                SUCCESS MESSAGE
+            ========================== */}
             {message && (
               <div
                 role="status"
                 className="mb-5 flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3"
               >
-                <svg
+                <FontAwesomeIcon
+                  icon={faCircleCheck}
                   className="mt-0.5 h-5 w-5 shrink-0 text-green-600"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+                />
 
                 <p className="text-sm font-medium text-green-700">{message}</p>
               </div>
             )}
 
-            {/* Error */}
+            {/* =========================
+                ERROR MESSAGE
+            ========================== */}
             {error && (
               <div
                 role="alert"
                 className="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3"
               >
-                <svg
+                <FontAwesomeIcon
+                  icon={faCircleExclamation}
                   className="mt-0.5 h-5 w-5 shrink-0 text-red-600"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <circle cx="12" cy="12" r="9" />
-                  <path strokeLinecap="round" d="M12 8v5" />
-                  <path strokeLinecap="round" d="M12 16h.01" />
-                </svg>
+                />
 
                 <p className="text-sm font-medium text-red-700">{error}</p>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Current Password */}
+              {/* =========================
+                  CURRENT PASSWORD
+              ========================== */}
               <div>
                 <label
                   htmlFor="current-password"
@@ -283,12 +289,17 @@ function Profile() {
                         : "Tampilkan password"
                     }
                   >
-                    {showCurrentPassword ? "🙈" : "👁"}
+                    <FontAwesomeIcon
+                      icon={showCurrentPassword ? faEyeSlash : faEye}
+                      className="h-4 w-4"
+                    />
                   </button>
                 </div>
               </div>
 
-              {/* New Password */}
+              {/* =========================
+                  NEW PASSWORD
+              ========================== */}
               <div>
                 <label
                   htmlFor="new-password"
@@ -320,13 +331,17 @@ function Profile() {
                         : "Tampilkan password"
                     }
                   >
-                    {showPassword ? "🙈" : "👁"}
+                    <FontAwesomeIcon
+                      icon={showPassword ? faEyeSlash : faEye}
+                      className="h-4 w-4"
+                    />
                   </button>
                 </div>
 
-                <div className="mt-2 flex items-center justify-between">
+                {/* Password Length */}
+                <div className="mt-2">
                   <p
-                    className={`text-xs ${
+                    className={`inline-flex items-center gap-1.5 text-xs ${
                       password.length === 0
                         ? "text-gray-400"
                         : passwordValid
@@ -334,16 +349,20 @@ function Profile() {
                           : "text-gray-500"
                     }`}
                   >
+                    {passwordValid && <FontAwesomeIcon icon={faCircleCheck} />}
+
                     {password.length === 0
                       ? "Minimal 8 karakter"
                       : passwordValid
-                        ? "✓ Password memenuhi panjang minimum"
+                        ? "Password memenuhi panjang minimum"
                         : `${password.length}/8 karakter`}
                   </p>
                 </div>
               </div>
 
-              {/* Confirm Password */}
+              {/* =========================
+                  CONFIRM PASSWORD
+              ========================== */}
               <div>
                 <label
                   htmlFor="confirm-password"
@@ -385,24 +404,32 @@ function Profile() {
                         : "Tampilkan password"
                     }
                   >
-                    {showPasswordConfirmation ? "🙈" : "👁"}
+                    <FontAwesomeIcon
+                      icon={showPasswordConfirmation ? faEyeSlash : faEye}
+                      className="h-4 w-4"
+                    />
                   </button>
                 </div>
 
+                {/* Password Match */}
                 {passwordMatch !== null && (
                   <p
-                    className={`mt-2 text-xs font-medium ${
+                    className={`mt-2 inline-flex items-center gap-1.5 text-xs font-medium ${
                       passwordMatch ? "text-green-600" : "text-red-600"
                     }`}
                   >
-                    {passwordMatch
-                      ? "✓ Password cocok"
-                      : "Password belum cocok"}
+                    <FontAwesomeIcon
+                      icon={passwordMatch ? faCircleCheck : faCircleExclamation}
+                    />
+
+                    {passwordMatch ? "Password cocok" : "Password belum cocok"}
                   </p>
                 )}
               </div>
 
-              {/* Password Notice */}
+              {/* =========================
+                  PASSWORD NOTICE
+              ========================== */}
               <div className="rounded-xl bg-gray-50 px-4 py-3">
                 <p className="text-xs leading-5 text-gray-500">
                   Gunakan password yang sulit ditebak dan jangan menggunakan
@@ -410,7 +437,9 @@ function Profile() {
                 </p>
               </div>
 
-              {/* Actions */}
+              {/* =========================
+                  ACTIONS
+              ========================== */}
               <div className="flex items-center justify-end border-t border-gray-100 pt-5">
                 <button
                   type="submit"
