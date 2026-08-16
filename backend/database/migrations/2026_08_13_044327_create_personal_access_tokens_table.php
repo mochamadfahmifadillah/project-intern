@@ -8,18 +8,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('permission_role', function (Blueprint $table) {
+        Schema::create('personal_access_tokens', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('permission_id')
-                ->constrained()
-                ->cascadeOnDelete();
+            $table->morphs('tokenable');
 
-            $table->foreignId('role_id')
-                ->constrained()
-                ->cascadeOnDelete();
+            $table->string('name');
 
-            $table->unique(['permission_id', 'role_id']);
+            $table->string('token', 64)->unique();
+
+            $table->text('abilities')->nullable();
+
+            $table->timestamp('last_used_at')->nullable();
+
+            $table->timestamp('expires_at')->nullable();
 
             $table->timestamps();
         });
@@ -27,6 +29,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('permission_role');
+        Schema::dropIfExists('personal_access_tokens');
     }
 };

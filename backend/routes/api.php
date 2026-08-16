@@ -3,8 +3,16 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SoftwareCategoryController;
+use App\Http\Controllers\SoftwareController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/test', function () {
     return response()->json([
@@ -16,22 +24,40 @@ Route::get('/test', function () {
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Protected routes
+
+/*
+|--------------------------------------------------------------------------
+| Protected Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Current user
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication & Account
+    |--------------------------------------------------------------------------
+    */
+
+    // Current authenticated user
     Route::get('/user', [AuthController::class, 'user']);
 
-    // Dashboard Statistics
+    // Dashboard statistics
     Route::get('/dashboard', [AuthController::class, 'dashboard']);
 
-    // Update Password
+    // Update password
     Route::put('/user/password', [AuthController::class, 'updatePassword']);
 
     // Logout
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // User Management
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Management
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/users', [UserController::class, 'index'])
         ->middleware('permission:users.view');
 
@@ -47,7 +73,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/users/{user}', [UserController::class, 'destroy'])
         ->middleware('permission:users.delete');
 
-    // Role Management
+
+    /*
+    |--------------------------------------------------------------------------
+    | Role Management
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/roles', [RoleController::class, 'index'])
         ->middleware('permission:roles.view');
 
@@ -63,7 +95,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
         ->middleware('permission:roles.delete');
 
-    // Permission Management
+
+    /*
+    |--------------------------------------------------------------------------
+    | Permission Management
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/permissions', [PermissionController::class, 'index'])
         ->middleware('permission:permissions.view');
 
@@ -78,4 +116,48 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::delete('/permissions/{permission}', [PermissionController::class, 'destroy'])
         ->middleware('permission:permissions.delete');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Software Category Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/software-categories', [SoftwareCategoryController::class, 'index'])
+        ->middleware('permission:software-categories.view');
+
+    Route::get('/software-categories/{softwareCategory}', [SoftwareCategoryController::class, 'show'])
+        ->middleware('permission:software-categories.view');
+
+    Route::post('/software-categories', [SoftwareCategoryController::class, 'store'])
+        ->middleware('permission:software-categories.create');
+
+    Route::put('/software-categories/{softwareCategory}', [SoftwareCategoryController::class, 'update'])
+        ->middleware('permission:software-categories.edit');
+
+    Route::delete('/software-categories/{softwareCategory}', [SoftwareCategoryController::class, 'destroy'])
+        ->middleware('permission:software-categories.delete');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Software Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/softwares', [SoftwareController::class, 'index'])
+        ->middleware('permission:softwares.view');
+
+    Route::get('/softwares/{software}', [SoftwareController::class, 'show'])
+        ->middleware('permission:softwares.view');
+
+    Route::post('/softwares', [SoftwareController::class, 'store'])
+        ->middleware('permission:softwares.create');
+
+    Route::put('/softwares/{software}', [SoftwareController::class, 'update'])
+        ->middleware('permission:softwares.edit');
+
+    Route::delete('/softwares/{software}', [SoftwareController::class, 'destroy'])
+        ->middleware('permission:softwares.delete');
 });

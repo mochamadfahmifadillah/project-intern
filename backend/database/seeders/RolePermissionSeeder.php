@@ -35,20 +35,35 @@ class RolePermissionSeeder extends Seeder
         // =========================
 
         $permissions = [
+            // User Management
             'users.view',
             'users.create',
             'users.edit',
             'users.delete',
 
+            // Role Management
             'roles.view',
             'roles.create',
             'roles.edit',
             'roles.delete',
 
+            // Permission Management
             'permissions.view',
             'permissions.create',
             'permissions.edit',
             'permissions.delete',
+
+            // Software Category Management
+            'software-categories.view',
+            'software-categories.create',
+            'software-categories.edit',
+            'software-categories.delete',
+
+            // Software Management
+            'softwares.view',
+            'softwares.create',
+            'softwares.edit',
+            'softwares.delete',
         ];
 
         foreach ($permissions as $permissionName) {
@@ -72,17 +87,32 @@ class RolePermissionSeeder extends Seeder
 
         $admin->permissions()->sync(
             Permission::whereIn('name', [
+                // Users
                 'users.view',
                 'users.create',
                 'users.edit',
                 'users.delete',
 
+                // Roles
                 'roles.view',
                 'roles.create',
                 'roles.edit',
                 'roles.delete',
 
+                // Permissions
                 'permissions.view',
+
+                // Software Categories
+                'software-categories.view',
+                'software-categories.create',
+                'software-categories.edit',
+                'software-categories.delete',
+
+                // Software
+                'softwares.view',
+                'softwares.create',
+                'softwares.edit',
+                'softwares.delete',
             ])->pluck('id')
         );
 
@@ -93,6 +123,10 @@ class RolePermissionSeeder extends Seeder
         $staff->permissions()->sync(
             Permission::whereIn('name', [
                 'users.view',
+
+                // Software Directory
+                'software-categories.view',
+                'softwares.view',
             ])->pluck('id')
         );
 
