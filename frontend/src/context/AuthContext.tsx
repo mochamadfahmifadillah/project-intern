@@ -7,17 +7,17 @@ import {
 } from "react";
 import api from "../services/api";
 
+interface Permission {
+  id: number;
+  name: string;
+  description: string | null;
+}
+
 interface Role {
   id: number;
   name: string;
   description: string | null;
   permissions?: Permission[];
-}
-
-interface Permission {
-  id: number;
-  name: string;
-  description: string | null;
 }
 
 interface User {
@@ -45,7 +45,7 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(
+  const [token, setToken] = useState<string | null>(() =>
     localStorage.getItem("token"),
   );
   const [loading, setLoading] = useState(true);
@@ -59,18 +59,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
 
-      api.defaults.headers.common.Authorization = `Bearer ${storedToken}`;
-
       try {
         const response = await api.get("/user");
 
         setUser(response.data.user);
+        setToken(storedToken);
       } catch (error) {
         console.error("Gagal mengambil user:", error);
 
         localStorage.removeItem("token");
-        delete api.defaults.headers.common.Authorization;
-
         setToken(null);
         setUser(null);
       } finally {
@@ -87,28 +84,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
       password,
     });
 
-    const newToken = response.data.token;
+    const newToken = response.data?.token;
 
+    if (!newToken) {
+      throw new Error("Token tidak ditemukan dari response login.");
+    }
+
+    // Simpan token
     localStorage.setItem("token", newToken);
 
-    api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-
+    // Update React state
     setToken(newToken);
 
+    // Ambil data user menggunakan token yang baru
     const userResponse = await api.get("/user");
 
     setUser(userResponse.data.user);
   };
 
   const logout = async () => {
+    const currentToken = localStorage.getItem("token");
+
     try {
-      await api.post("/logout");
+      if (currentToken) {
+        await api.post("/logout");
+      }
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
       localStorage.removeItem("token");
-
-      delete api.defaults.headers.common.Authorization;
 
       setToken(null);
       setUser(null);

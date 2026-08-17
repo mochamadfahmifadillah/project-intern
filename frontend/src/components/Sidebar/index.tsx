@@ -25,6 +25,16 @@ function Sidebar() {
       path: "/permissions",
       permission: "permissions.view",
     },
+    {
+      name: "Softwares",
+      path: "/softwares",
+      permission: "softwares.view",
+    },
+    {
+      name: "Software Categories",
+      path: "/software-categories",
+      permission: "software-categories.view",
+    },
   ];
 
   const visibleMenuItems = menuItems.filter((item) => {
@@ -35,7 +45,9 @@ function Sidebar() {
     return hasPermission(item.permission);
   });
 
-  const dashboard = visibleMenuItems.find((item) => item.path === "/dashboard");
+  const dashboard = visibleMenuItems.find(
+    (item) => item.path === "/dashboard",
+  );
 
   const managementItems = visibleMenuItems.filter(
     (item) => item.path !== "/dashboard",
@@ -105,7 +117,9 @@ function Sidebar() {
         {/* Bottom Info */}
         <div className="mt-auto pt-6">
           <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-3">
-            <p className="text-xs font-medium text-gray-700">Software Empire</p>
+            <p className="text-xs font-medium text-gray-700">
+              Software Empire
+            </p>
 
             <p className="mt-0.5 text-[11px] text-gray-400">
               Administration Panel
@@ -118,3 +132,4 @@ function Sidebar() {
 }
 
 export default Sidebar;
+

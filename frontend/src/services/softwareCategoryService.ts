@@ -5,41 +5,74 @@ export interface SoftwareCategory {
   name: string;
   slug: string;
   description: string | null;
-  softwares_count?: number;
   created_at?: string;
   updated_at?: string;
+  softwares_count?: number;
 }
 
-export interface SoftwareCategoryPayload {
+export interface SoftwareCategoryResponse {
+  message: string;
+  data: SoftwareCategory[];
+}
+
+export interface SoftwareCategoryDetailResponse {
+  message: string;
+  data: SoftwareCategory;
+}
+
+export interface CreateSoftwareCategoryPayload {
+  name: string;
+  slug?: string;
+  description?: string;
+}
+
+export interface UpdateSoftwareCategoryPayload {
   name: string;
   slug?: string;
   description?: string;
 }
 
 export const getSoftwareCategories = async () => {
-  const response = await api.get("/software-categories");
+  const response = await api.get<SoftwareCategoryResponse>(
+    "/software-categories"
+  );
+
   return response.data;
 };
 
 export const getSoftwareCategory = async (id: number) => {
-  const response = await api.get(`/software-categories/${id}`);
+  const response = await api.get<SoftwareCategoryDetailResponse>(
+    `/software-categories/${id}`
+  );
+
   return response.data;
 };
 
-export const createSoftwareCategory = async (data: SoftwareCategoryPayload) => {
-  const response = await api.post("/software-categories", data);
+export const createSoftwareCategory = async (
+  data: CreateSoftwareCategoryPayload
+) => {
+  const response = await api.post<SoftwareCategoryDetailResponse>(
+    "/software-categories",
+    data
+  );
+
   return response.data;
 };
 
 export const updateSoftwareCategory = async (
   id: number,
-  data: SoftwareCategoryPayload,
+  data: UpdateSoftwareCategoryPayload
 ) => {
-  const response = await api.put(`/software-categories/${id}`, data);
+  const response = await api.put<SoftwareCategoryDetailResponse>(
+    `/software-categories/${id}`,
+    data
+  );
+
   return response.data;
 };
 
 export const deleteSoftwareCategory = async (id: number) => {
   const response = await api.delete(`/software-categories/${id}`);
+
   return response.data;
 };

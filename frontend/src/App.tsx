@@ -1,32 +1,38 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import MainLayout from "./layouts/MainLayout";
 
 import Landing from "./pages/Landing/Landing";
 import Login from "./pages/Login/Login";
+import MainLayout from "./layouts/MainLayout";
+
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Users from "./pages/Users";
-import Roles from "./pages/Roles";
-import Permissions from "./pages/Permissions";
-import Profile from "./pages/Profile";
+import Roles from "./pages/Roles/index";
+import Permissions from "./pages/Permissions/index";
+import Profile from "./pages/Profile/index";
+
+import Software from "./pages/Software/index";
+import SoftwareCategories from "./pages/SoftwareCategories/index";
 
 function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Landing Page */}
+        {/* Public Pages */}
         <Route path="/" element={<Landing />} />
         <Route path="/landing" element={<Landing />} />
-
-        {/* Authentication */}
         <Route path="/login" element={<Login />} />
 
-        {/* Admin Application */}
+        {/* Admin Pages */}
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/users" element={<Users />} />
           <Route path="/roles" element={<Roles />} />
           <Route path="/permissions" element={<Permissions />} />
           <Route path="/profile" element={<Profile />} />
+
+          {/* Software Management */}
+          <Route path="/softwares" element={<Software />} />
+          <Route path="/software-categories" element={<SoftwareCategories />} />
         </Route>
       </Routes>
     </BrowserRouter>
