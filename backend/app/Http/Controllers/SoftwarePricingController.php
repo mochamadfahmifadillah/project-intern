@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 
 class SoftwarePricingController extends Controller
 {
+    /**
+     * Display a listing of software pricings.
+     */
     public function index()
     {
         $pricings = SoftwarePricing::with('software')
@@ -19,6 +22,9 @@ class SoftwarePricingController extends Controller
         ]);
     }
 
+    /**
+     * Store a newly created software pricing.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -27,29 +33,36 @@ class SoftwarePricingController extends Controller
                 'integer',
                 'exists:softwares,id',
             ],
+
             'pricing_type' => [
                 'required',
                 'in:free,freemium,paid,custom',
             ],
+
             'price' => [
                 'nullable',
                 'numeric',
                 'min:0',
             ],
+
             'currency' => [
                 'nullable',
                 'string',
                 'size:3',
             ],
+
             'billing_period' => [
                 'nullable',
                 'in:monthly,yearly,one_time,custom',
             ],
+
             'description' => [
                 'nullable',
                 'string',
             ],
         ]);
+
+        $validated['currency'] = $validated['currency'] ?? 'USD';
 
         $pricing = SoftwarePricing::create($validated);
 
@@ -61,6 +74,9 @@ class SoftwarePricingController extends Controller
         ], 201);
     }
 
+    /**
+     * Display the specified software pricing.
+     */
     public function show(SoftwarePricing $softwarePricing)
     {
         $softwarePricing->load('software');
@@ -71,6 +87,9 @@ class SoftwarePricingController extends Controller
         ]);
     }
 
+    /**
+     * Update the specified software pricing.
+     */
     public function update(
         Request $request,
         SoftwarePricing $softwarePricing
@@ -81,29 +100,36 @@ class SoftwarePricingController extends Controller
                 'integer',
                 'exists:softwares,id',
             ],
+
             'pricing_type' => [
                 'required',
                 'in:free,freemium,paid,custom',
             ],
+
             'price' => [
                 'nullable',
                 'numeric',
                 'min:0',
             ],
+
             'currency' => [
                 'nullable',
                 'string',
                 'size:3',
             ],
+
             'billing_period' => [
                 'nullable',
                 'in:monthly,yearly,one_time,custom',
             ],
+
             'description' => [
                 'nullable',
                 'string',
             ],
         ]);
+
+        $validated['currency'] = $validated['currency'] ?? 'USD';
 
         $softwarePricing->update($validated);
 
@@ -115,6 +141,9 @@ class SoftwarePricingController extends Controller
         ]);
     }
 
+    /**
+     * Remove the specified software pricing.
+     */
     public function destroy(SoftwarePricing $softwarePricing)
     {
         $softwarePricing->delete();

@@ -64,12 +64,20 @@ class RolePermissionSeeder extends Seeder
             'softwares.create',
             'softwares.edit',
             'softwares.delete',
+
+            // Software Pricing Management
+            'software-pricings.view',
+            'software-pricings.create',
+            'software-pricings.edit',
+            'software-pricings.delete',
         ];
 
         foreach ($permissions as $permissionName) {
             Permission::firstOrCreate(
                 ['name' => $permissionName],
-                ['description' => 'Permission untuk ' . $permissionName]
+                [
+                    'description' => 'Permission untuk ' . $permissionName,
+                ]
             );
         }
 
@@ -113,6 +121,12 @@ class RolePermissionSeeder extends Seeder
                 'softwares.create',
                 'softwares.edit',
                 'softwares.delete',
+
+                // Software Pricing
+                'software-pricings.view',
+                'software-pricings.create',
+                'software-pricings.edit',
+                'software-pricings.delete',
             ])->pluck('id')
         );
 
@@ -127,6 +141,9 @@ class RolePermissionSeeder extends Seeder
                 // Software Directory
                 'software-categories.view',
                 'softwares.view',
+
+                // Software Pricing
+                'software-pricings.view',
             ])->pluck('id')
         );
 

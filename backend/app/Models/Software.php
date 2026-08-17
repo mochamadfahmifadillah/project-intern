@@ -29,16 +29,15 @@ class Software extends Model
             SoftwareCategory::class,
             'category_id'
         );
-
-        
     }
-    public function features(): HasMany
-{
-    return $this->hasMany(SoftwareFeature::class);
-}
 
-public function pricings(): HasMany
-{
-    return $this->hasMany(SoftwarePricing::class);
-}
+    public function features(): HasMany
+    {
+        return $this->hasMany(SoftwareFeature::class);
+    }
+
+    public function pricings(): HasMany
+    {
+        return $this->hasMany(SoftwarePricing::class);
+    }
 }
