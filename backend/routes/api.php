@@ -6,6 +6,8 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SoftwareCategoryController;
 use App\Http\Controllers\SoftwareController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\SoftwareFeatureController;
+use App\Http\Controllers\SoftwarePricingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -138,9 +140,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::delete('/software-categories/{softwareCategory}', [SoftwareCategoryController::class, 'destroy'])
         ->middleware('permission:software-categories.delete');
-
-
-    /*
+   /*
     |--------------------------------------------------------------------------
     | Software Management
     |--------------------------------------------------------------------------
@@ -160,4 +160,46 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::delete('/softwares/{software}', [SoftwareController::class, 'destroy'])
         ->middleware('permission:softwares.delete');
+
+     /*
+    |--------------------------------------------------------------------------
+    | Software Features
+    |--------------------------------------------------------------------------
+    */
+    
+         Route::get('/software-features', [SoftwareFeatureController::class, 'index'])
+    ->middleware('permission:software-features.view');
+
+    Route::get('/software-features/{softwareFeature}', [SoftwareFeatureController::class, 'show'])
+    ->middleware('permission:software-features.view');
+
+    Route::post('/software-features', [SoftwareFeatureController::class, 'store'])
+    ->middleware('permission:software-features.create');
+
+    Route::put('/software-features/{softwareFeature}', [SoftwareFeatureController::class, 'update'])
+    ->middleware('permission:software-features.edit');
+
+    Route::delete('/software-features/{softwareFeature}', [SoftwareFeatureController::class, 'destroy'])
+    ->middleware('permission:software-features.delete');
+
+    /*
+|--------------------------------------------------------------------------
+| Software Pricing Management
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/software-pricings', [SoftwarePricingController::class, 'index'])
+    ->middleware('permission:software-pricings.view');
+
+Route::get('/software-pricings/{softwarePricing}', [SoftwarePricingController::class, 'show'])
+    ->middleware('permission:software-pricings.view');
+
+Route::post('/software-pricings', [SoftwarePricingController::class, 'store'])
+    ->middleware('permission:software-pricings.create');
+
+Route::put('/software-pricings/{softwarePricing}', [SoftwarePricingController::class, 'update'])
+    ->middleware('permission:software-pricings.edit');
+
+Route::delete('/software-pricings/{softwarePricing}', [SoftwarePricingController::class, 'destroy'])
+    ->middleware('permission:software-pricings.delete');
 });
