@@ -23,6 +23,20 @@ class Software extends Model
         'status',
     ];
 
+    /**
+     * Route Model Binding
+     *
+     * Gunakan slug sebagai parameter route,
+     * bukan ID.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    /**
+     * Software Category
+     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(
@@ -31,18 +45,38 @@ class Software extends Model
         );
     }
 
+    /**
+     * Software Features
+     */
     public function features(): HasMany
     {
-        return $this->hasMany(SoftwareFeature::class);
+        return $this->hasMany(
+            SoftwareFeature::class
+        );
     }
 
+    /**
+     * Software Pricings
+     */
     public function pricings(): HasMany
     {
-        return $this->hasMany(SoftwarePricing::class);
+        return $this->hasMany(
+            SoftwarePricing::class
+        );
     }
-    
+
+    /**
+     * Software Integrations
+     */
     public function integrations(): HasMany
+    {
+        return $this->hasMany(
+            SoftwareIntegration::class
+        );
+    }
+
+    public function reviews(): HasMany
 {
-    return $this->hasMany(SoftwareIntegration::class);
+    return $this->hasMany(SoftwareReview::class);
 }
 }

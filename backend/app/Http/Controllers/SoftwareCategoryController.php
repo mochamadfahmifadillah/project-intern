@@ -24,29 +24,86 @@ class SoftwareCategoryController extends Controller
     }
 
     /**
+     * Display public software categories.
+     *
+     * GET /api/public/software-categories
+     */
+    public function publicIndex()
+    {
+        $categories = SoftwareCategory::query()
+            ->orderBy('name')
+            ->get([
+                'id',
+                'name',
+                'slug',
+                'description',
+            ]);
+
+        return response()->json([
+            'message' => 'Public software categories berhasil diambil.',
+            'data' => $categories,
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', 'unique:software_categories,slug'],
-            'description' => ['nullable', 'string'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'slug' => [
+                'nullable',
+                'string',
+                'max:255',
+                'unique:software_categories,slug',
+            ],
+            'description' => [
+                'nullable',
+                'string',
+            ],
         ]);
 
-        $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
+        /*
+        |--------------------------------------------------------------------------
+        | Generate Slug
+        |--------------------------------------------------------------------------
+        */
 
-        // Pastikan slug otomatis juga tidak bentrok
+        $validated['slug'] =
+            $validated['slug'] ?? Str::slug($validated['name']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Check Duplicate Slug
+        |--------------------------------------------------------------------------
+        */
+
         if (
-            SoftwareCategory::where('slug', $validated['slug'])->exists()
+            SoftwareCategory::where(
+                'slug',
+                $validated['slug']
+            )->exists()
         ) {
             return response()->json([
                 'message' => 'Slug kategori sudah digunakan.',
                 'errors' => [
-                    'slug' => ['Slug kategori sudah digunakan.'],
+                    'slug' => [
+                        'Slug kategori sudah digunakan.',
+                    ],
                 ],
             ], 422);
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create Category
+        |--------------------------------------------------------------------------
+        */
 
         $category = SoftwareCategory::create($validated);
 
@@ -77,19 +134,62 @@ class SoftwareCategoryController extends Controller
         SoftwareCategory $softwareCategory
     ) {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
             'slug' => [
                 'nullable',
                 'string',
                 'max:255',
                 'unique:software_categories,slug,' . $softwareCategory->id,
             ],
-            'description' => ['nullable', 'string'],
+            'description' => [
+                'nullable',
+                'string',
+            ],
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generate Slug If Empty
+        |--------------------------------------------------------------------------
+        */
 
         if (empty($validated['slug'])) {
             $validated['slug'] = Str::slug($validated['name']);
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Check Duplicate Slug
+        |--------------------------------------------------------------------------
+        */
+
+        $slugExists = SoftwareCategory::where(
+            'slug',
+            $validated['slug']
+        )
+            ->where('id', '!=', $softwareCategory->id)
+            ->exists();
+
+        if ($slugExists) {
+            return response()->json([
+                'message' => 'Slug kategori sudah digunakan.',
+                'errors' => [
+                    'slug' => [
+                        'Slug kategori sudah digunakan.',
+                    ],
+                ],
+            ], 422);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Category
+        |--------------------------------------------------------------------------
+        */
 
         $softwareCategory->update($validated);
 
