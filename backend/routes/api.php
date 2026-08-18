@@ -4,10 +4,12 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SoftwareCategoryController;
+use App\Http\Controllers\SoftwareComparisonController;
 use App\Http\Controllers\SoftwareController;
 use App\Http\Controllers\SoftwareFeatureController;
 use App\Http\Controllers\SoftwareIntegrationController;
 use App\Http\Controllers\SoftwarePricingController;
+use App\Http\Controllers\SoftwareRatingController;
 use App\Http\Controllers\SoftwareReviewController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VendorController;
@@ -90,6 +92,48 @@ Route::get('/software-directory/{slug}', [
 Route::get('/software-directory/{software}/reviews', [
     SoftwareReviewController::class,
     'index',
+]);
+
+/*
+|--------------------------------------------------------------------------
+| Public Software Ratings
+|--------------------------------------------------------------------------
+|
+| GET /api/software-directory/{software}/ratings
+|
+| Menampilkan:
+| - average_rating
+| - total_ratings
+| - user_rating
+|
+*/
+
+Route::get('/software-directory/{software}/ratings', [
+    SoftwareRatingController::class,
+    'index',
+]);
+
+/*
+|--------------------------------------------------------------------------
+| Public Software Comparison
+|--------------------------------------------------------------------------
+|
+| GET /api/software-comparison?software[]=figma&software[]=trello
+|
+| Digunakan untuk membandingkan beberapa software
+| berdasarkan:
+| - Informasi dasar
+| - Kategori
+| - Fitur
+| - Pricing
+| - Integrasi
+| - Rating
+|
+*/
+
+Route::get('/software-comparison', [
+    SoftwareComparisonController::class,
+    'compare',
 ]);
 
 /*
@@ -328,6 +372,78 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::delete('/software-reviews/{softwareReview}', [
         SoftwareReviewController::class,
+        'destroy',
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Software Ratings
+    |--------------------------------------------------------------------------
+    |
+    | User yang sudah login dapat:
+    |
+    | POST   /api/software-directory/{software}/ratings
+    | PUT    /api/software-ratings/{softwareRating}
+    | PATCH  /api/software-ratings/{softwareRating}
+    | DELETE /api/software-ratings/{softwareRating}
+    |
+    | User hanya dapat mengubah/menghapus rating miliknya sendiri.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Create Rating
+    |--------------------------------------------------------------------------
+    |
+    | POST /api/software-directory/{software}/ratings
+    |
+    */
+
+    Route::post('/software-directory/{software}/ratings', [
+        SoftwareRatingController::class,
+        'store',
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Rating
+    |--------------------------------------------------------------------------
+    |
+    | PUT /api/software-ratings/{softwareRating}
+    |
+    */
+
+    Route::put('/software-ratings/{softwareRating}', [
+        SoftwareRatingController::class,
+        'update',
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Rating - PATCH
+    |--------------------------------------------------------------------------
+    |
+    | PATCH /api/software-ratings/{softwareRating}
+    |
+    */
+
+    Route::patch('/software-ratings/{softwareRating}', [
+        SoftwareRatingController::class,
+        'update',
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delete Rating
+    |--------------------------------------------------------------------------
+    |
+    | DELETE /api/software-ratings/{softwareRating}
+    |
+    */
+
+    Route::delete('/software-ratings/{softwareRating}', [
+        SoftwareRatingController::class,
         'destroy',
     ]);
 

@@ -66,6 +66,26 @@ export interface SoftwareReview {
 
 /*
 |--------------------------------------------------------------------------
+| Software Rating
+|--------------------------------------------------------------------------
+*/
+
+export interface SoftwareRating {
+  id: number;
+  software_id: number;
+  user_id: number;
+  rating: number;
+  created_at?: string;
+  updated_at?: string;
+
+  user?: {
+    id: number;
+    name: string;
+  };
+}
+
+/*
+|--------------------------------------------------------------------------
 | Software
 |--------------------------------------------------------------------------
 */
@@ -86,9 +106,37 @@ export interface Software {
   pricings?: SoftwarePricing[];
   integrations?: SoftwareIntegration[];
   reviews?: SoftwareReview[];
+  ratings?: SoftwareRating[];
 
   created_at?: string;
   updated_at?: string;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Software Comparison
+|--------------------------------------------------------------------------
+|
+| Data khusus yang digunakan oleh halaman comparison.
+|
+*/
+
+export interface SoftwareComparisonItem {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  website_url: string | null;
+  logo: string | null;
+
+  category?: SoftwareCategory;
+
+  features?: SoftwareFeature[];
+  pricings?: SoftwarePricing[];
+  integrations?: SoftwareIntegration[];
+
+  average_rating?: number;
+  total_ratings?: number;
 }
 
 /*
@@ -111,9 +159,23 @@ export interface SoftwareReviewPayload {
   review: string;
 }
 
+export interface SoftwareRatingPayload {
+  rating: number;
+}
+
 export interface PublicSoftwareParams {
   search?: string;
   category?: string;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Software Comparison Params
+|--------------------------------------------------------------------------
+*/
+
+export interface SoftwareComparisonParams {
+  software: string[];
 }
 
 /*
@@ -145,6 +207,27 @@ export interface SoftwareReviewResponse {
 export interface SoftwareReviewsResponse {
   message: string;
   data: SoftwareReview[];
+}
+
+export interface SoftwareRatingResponse {
+  message: string;
+  data: SoftwareRating;
+}
+
+export interface SoftwareRatingsResponse {
+  message: string;
+  data: SoftwareRating[];
+}
+
+/*
+|--------------------------------------------------------------------------
+| Software Comparison Response
+|--------------------------------------------------------------------------
+*/
+
+export interface SoftwareComparisonResponse {
+  message: string;
+  data: SoftwareComparisonItem[];
 }
 
 export interface MessageResponse {
@@ -247,9 +330,6 @@ export const getPublicSoftwareDetail = async (
 |
 | GET /api/software-directory/{slug}/reviews
 |
-| Digunakan untuk menampilkan review pada
-| halaman public Software Detail.
-|
 */
 
 export const getPublicSoftwareReviews = async (
@@ -292,8 +372,6 @@ export const createSoftwareReview = async (
 |
 | PUT /api/software-reviews/{id}
 |
-| User hanya dapat mengubah review miliknya sendiri.
-|
 */
 
 export const updateSoftwareReview = async (
@@ -315,14 +393,120 @@ export const updateSoftwareReview = async (
 |
 | DELETE /api/software-reviews/{id}
 |
-| User hanya dapat menghapus review miliknya sendiri.
-|
 */
 
 export const deleteSoftwareReview = async (
   id: number,
 ): Promise<MessageResponse> => {
-  const response = await api.delete<MessageResponse>(`/software-reviews/${id}`);
+  const response = await api.delete<MessageResponse>(
+    `/software-reviews/${id}`,
+  );
+
+  return response.data;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Get Public Software Ratings
+|--------------------------------------------------------------------------
+|
+| GET /api/software-directory/{slug}/ratings
+|
+*/
+
+export const getPublicSoftwareRating = async (
+  slug: string,
+): Promise<SoftwareRatingsResponse> => {
+  const response = await api.get<SoftwareRatingsResponse>(
+    `/software-directory/${slug}/ratings`,
+  );
+
+  return response.data;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Create Software Rating
+|--------------------------------------------------------------------------
+|
+| POST /api/software-directory/{slug}/ratings
+|
+| Membutuhkan authentication.
+|
+*/
+
+export const createSoftwareRating = async (
+  slug: string,
+  data: SoftwareRatingPayload,
+): Promise<SoftwareRatingResponse> => {
+  const response = await api.post<SoftwareRatingResponse>(
+    `/software-directory/${slug}/ratings`,
+    data,
+  );
+
+  return response.data;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Update Software Rating
+|--------------------------------------------------------------------------
+|
+| PUT /api/software-ratings/{id}
+|
+*/
+
+export const updateSoftwareRating = async (
+  id: number,
+  data: SoftwareRatingPayload,
+): Promise<SoftwareRatingResponse> => {
+  const response = await api.put<SoftwareRatingResponse>(
+    `/software-ratings/${id}`,
+    data,
+  );
+
+  return response.data;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Get Software Comparison
+|--------------------------------------------------------------------------
+|
+| GET /api/software-comparison?software[]=figma&software[]=canva
+|
+| Digunakan untuk membandingkan beberapa software
+| berdasarkan:
+|
+| - Informasi software
+| - Category
+| - Features
+| - Pricing
+| - Integrations
+| - Average rating
+| - Total ratings
+|
+*/
+
+export const getSoftwareComparison = async (
+  softwareSlugs: string[],
+): Promise<SoftwareComparisonResponse> => {
+  if (softwareSlugs.length < 2) {
+    throw new Error("Minimal pilih 2 software untuk dibandingkan.");
+  }
+
+  if (softwareSlugs.length > 4) {
+    throw new Error("Maksimal 4 software dapat dibandingkan.");
+  }
+
+  const response = await api.get<SoftwareComparisonResponse>(
+    "/software-comparison",
+    {
+      params: {
+        software: softwareSlugs,
+      },
+    },
+  );
 
   return response.data;
 };
@@ -339,7 +523,9 @@ export const deleteSoftwareReview = async (
 export const getSoftware = async (
   id: number,
 ): Promise<SoftwareDetailResponse> => {
-  const response = await api.get<SoftwareDetailResponse>(`/softwares/${id}`);
+  const response = await api.get<SoftwareDetailResponse>(
+    `/softwares/${id}`,
+  );
 
   return response.data;
 };
@@ -356,7 +542,10 @@ export const getSoftware = async (
 export const createSoftware = async (
   data: SoftwarePayload,
 ): Promise<SoftwareDetailResponse> => {
-  const response = await api.post<SoftwareDetailResponse>("/softwares", data);
+  const response = await api.post<SoftwareDetailResponse>(
+    "/softwares",
+    data,
+  );
 
   return response.data;
 };
@@ -391,8 +580,12 @@ export const updateSoftware = async (
 |
 */
 
-export const deleteSoftware = async (id: number): Promise<MessageResponse> => {
-  const response = await api.delete<MessageResponse>(`/softwares/${id}`);
+export const deleteSoftware = async (
+  id: number,
+): Promise<MessageResponse> => {
+  const response = await api.delete<MessageResponse>(
+    `/softwares/${id}`,
+  );
 
   return response.data;
 };

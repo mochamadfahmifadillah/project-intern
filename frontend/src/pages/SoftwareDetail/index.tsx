@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
+  createSoftwareRating,
   createSoftwareReview,
   deleteSoftwareReview,
   getPublicSoftwareDetail,
+  getPublicSoftwareRating,
   getPublicSoftwareReviews,
+  updateSoftwareRating,
   type Software,
+  type SoftwareRating,
   type SoftwareReview,
 } from "../../services/softwareService";
 
@@ -14,12 +18,20 @@ function SoftwareDetail() {
 
   const [software, setSoftware] = useState<Software | null>(null);
   const [reviews, setReviews] = useState<SoftwareReview[]>([]);
+  const [ratings, setRatings] = useState<SoftwareRating[]>([]);
 
   const [reviewText, setReviewText] = useState("");
 
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+
   const [loading, setLoading] = useState(true);
   const [loadingReviews, setLoadingReviews] = useState(true);
+  const [loadingRatings, setLoadingRatings] = useState(true);
+
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [submittingRating, setSubmittingRating] = useState(false);
+
   const [deletingReviewId, setDeletingReviewId] = useState<number | null>(
     null,
   );
@@ -27,6 +39,9 @@ function SoftwareDetail() {
   const [error, setError] = useState("");
   const [reviewError, setReviewError] = useState("");
   const [reviewSuccess, setReviewSuccess] = useState("");
+
+  const [ratingError, setRatingError] = useState("");
+  const [ratingSuccess, setRatingSuccess] = useState("");
 
   /*
   |--------------------------------------------------------------------------
@@ -90,6 +105,75 @@ function SoftwareDetail() {
 
   /*
   |--------------------------------------------------------------------------
+  | Fetch Ratings
+  |--------------------------------------------------------------------------
+  */
+
+  const fetchRatings = async () => {
+    if (!slug) {
+      setLoadingRatings(false);
+      return;
+    }
+
+    try {
+      setLoadingRatings(true);
+      setRatingError("");
+
+      const response = await getPublicSoftwareRating(slug);
+
+      const ratingData = response?.data ?? [];
+
+      setRatings(ratingData);
+
+      /*
+      |--------------------------------------------------------------------------
+      | Ambil rating user yang sedang login
+      |--------------------------------------------------------------------------
+      |
+      | Kita cek user_id dari localStorage.
+      | Sesuaikan key jika aplikasi lu menyimpan user
+      | dengan key yang berbeda.
+      |
+      */
+
+      const storedUser = localStorage.getItem("user");
+
+      if (storedUser) {
+        try {
+          const currentUser = JSON.parse(storedUser);
+
+          const currentUserId = Number(currentUser?.id);
+
+          const userRating = ratingData.find(
+            (rating) => rating.user_id === currentUserId,
+          );
+
+          if (userRating) {
+            setSelectedRating(userRating.rating);
+          } else {
+            setSelectedRating(0);
+          }
+        } catch (error) {
+          console.error("Gagal membaca data user:", error);
+
+          setSelectedRating(0);
+        }
+      } else {
+        setSelectedRating(0);
+      }
+    } catch (error) {
+      console.error("Gagal mengambil rating:", error);
+
+      setRatings([]);
+      setSelectedRating(0);
+      setRatingError("Gagal mengambil rating software.");
+    } finally {
+      setLoadingRatings(false);
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
   | Load Data
   |--------------------------------------------------------------------------
   */
@@ -97,7 +181,108 @@ function SoftwareDetail() {
   useEffect(() => {
     fetchSoftwareDetail();
     fetchReviews();
+    fetchRatings();
   }, [slug]);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Rating Calculation
+  |--------------------------------------------------------------------------
+  */
+
+  const totalRatings = ratings.length;
+
+  const averageRating =
+    totalRatings > 0
+      ? ratings.reduce((total, item) => total + Number(item.rating), 0) /
+        totalRatings
+      : 0;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Get Current User Rating
+  |--------------------------------------------------------------------------
+  */
+
+  const getCurrentUserRating = (): SoftwareRating | null => {
+    const storedUser = localStorage.getItem("user");
+
+    if (!storedUser) {
+      return null;
+    }
+
+    try {
+      const currentUser = JSON.parse(storedUser);
+
+      const currentUserId = Number(currentUser?.id);
+
+      return (
+        ratings.find((rating) => rating.user_id === currentUserId) || null
+      );
+    } catch (error) {
+      console.error("Gagal membaca user:", error);
+
+      return null;
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Submit Rating
+  |--------------------------------------------------------------------------
+  */
+
+  const handleSubmitRating = async (ratingValue: number) => {
+    if (!slug) {
+      return;
+    }
+
+    if (ratingValue < 1 || ratingValue > 5) {
+      return;
+    }
+
+    try {
+      setSubmittingRating(true);
+      setRatingError("");
+      setRatingSuccess("");
+
+      const existingRating = getCurrentUserRating();
+
+      if (existingRating) {
+        await updateSoftwareRating(existingRating.id, {
+          rating: ratingValue,
+        });
+
+        setRatingSuccess("Rating berhasil diperbarui.");
+      } else {
+        await createSoftwareRating(slug, {
+          rating: ratingValue,
+        });
+
+        setRatingSuccess("Rating berhasil diberikan.");
+      }
+
+      setSelectedRating(ratingValue);
+
+      await fetchRatings();
+    } catch (error: any) {
+      console.error("Gagal menyimpan rating:", error);
+
+      const status = error?.response?.status;
+
+      const message =
+        error?.response?.data?.message ||
+        (status === 401
+          ? "Silakan login terlebih dahulu untuk memberikan rating."
+          : status === 403
+            ? "Anda tidak memiliki akses untuk mengubah rating ini."
+            : "Gagal menyimpan rating.");
+
+      setRatingError(message);
+    } finally {
+      setSubmittingRating(false);
+    }
+  };
 
   /*
   |--------------------------------------------------------------------------
@@ -127,7 +312,9 @@ function SoftwareDetail() {
       setReviewError("");
       setReviewSuccess("");
 
-      await createSoftwareReview(slug, trimmedReview);
+      await createSoftwareReview(slug, {
+        review: trimmedReview,
+      });
 
       setReviewText("");
       setReviewSuccess("Review berhasil ditambahkan.");
@@ -315,6 +502,39 @@ function SoftwareDetail() {
                 <p className="mt-4 max-w-3xl leading-7 text-gray-500">
                   {software.description || "Tidak ada deskripsi software."}
                 </p>
+
+                {/* Rating Summary */}
+
+                <div className="mt-5 flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span
+                        key={star}
+                        className={
+                          star <= Math.round(averageRating)
+                            ? "text-xl text-yellow-400"
+                            : "text-xl text-gray-300"
+                        }
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+
+                  {loadingRatings ? (
+                    <span className="text-sm text-gray-400">
+                      Memuat rating...
+                    </span>
+                  ) : totalRatings > 0 ? (
+                    <span className="text-sm text-gray-500">
+                      {averageRating.toFixed(1)} / 5 ({totalRatings} rating)
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-400">
+                      Belum ada rating
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -327,6 +547,86 @@ function SoftwareDetail() {
               >
                 Kunjungi Website →
               </a>
+            )}
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Rating */}
+        {/* ---------------------------------------------------------------- */}
+
+        <section className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Berikan Rating
+            </h2>
+
+            <p className="mt-1 text-sm text-gray-500">
+              Nilai pengalaman Anda menggunakan {software.name}.
+            </p>
+          </div>
+
+          <div className="mt-6 flex flex-col items-start gap-4">
+            <div className="flex items-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => {
+                const activeStar =
+                  hoverRating > 0
+                    ? star <= hoverRating
+                    : star <= selectedRating;
+
+                return (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => handleSubmitRating(star)}
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    disabled={submittingRating}
+                    aria-label={`Beri rating ${star} dari 5`}
+                    className="text-4xl transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <span
+                      className={
+                        activeStar
+                          ? "text-yellow-400"
+                          : "text-gray-300"
+                      }
+                    >
+                      ★
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {selectedRating > 0 ? (
+                <span className="text-sm font-medium text-gray-700">
+                  Rating Anda: {selectedRating}/5
+                </span>
+              ) : (
+                <span className="text-sm text-gray-400">
+                  Pilih 1–5 bintang
+                </span>
+              )}
+
+              {submittingRating && (
+                <span className="text-sm text-gray-400">
+                  Menyimpan...
+                </span>
+              )}
+            </div>
+
+            {ratingError && (
+              <div className="w-full rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+                <p className="text-sm text-red-600">{ratingError}</p>
+              </div>
+            )}
+
+            {ratingSuccess && (
+              <div className="w-full rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+                <p className="text-sm text-green-600">{ratingSuccess}</p>
+              </div>
             )}
           </div>
         </section>
@@ -348,7 +648,9 @@ function SoftwareDetail() {
           </section>
 
           <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-gray-900">Informasi</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Informasi
+            </h2>
 
             <div className="mt-5 space-y-5">
               <div>
@@ -407,7 +709,9 @@ function SoftwareDetail() {
 
         <section className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">Fitur</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Fitur
+            </h2>
 
             {software.features && software.features.length > 0 && (
               <span className="text-sm text-gray-400">
@@ -423,7 +727,9 @@ function SoftwareDetail() {
                   key={feature.id}
                   className="rounded-lg border border-gray-200 p-4 transition hover:border-blue-200"
                 >
-                  <h3 className="font-medium text-gray-900">{feature.name}</h3>
+                  <h3 className="font-medium text-gray-900">
+                    {feature.name}
+                  </h3>
 
                   {feature.description && (
                     <p className="mt-2 text-sm leading-6 text-gray-500">
@@ -448,7 +754,9 @@ function SoftwareDetail() {
 
         <section className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">Pricing</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Pricing
+            </h2>
 
             {software.pricings && software.pricings.length > 0 && (
               <span className="text-sm text-gray-400">
@@ -468,11 +776,12 @@ function SoftwareDetail() {
                     {pricing.name || "Pricing Plan"}
                   </h3>
 
-                  {pricing.price !== undefined && pricing.price !== null && (
-                    <p className="mt-3 text-xl font-bold text-gray-900">
-                      {pricing.price}
-                    </p>
-                  )}
+                  {pricing.price !== undefined &&
+                    pricing.price !== null && (
+                      <p className="mt-3 text-xl font-bold text-gray-900">
+                        {pricing.price}
+                      </p>
+                    )}
 
                   {pricing.description && (
                     <p className="mt-2 text-sm leading-6 text-gray-500">
@@ -497,16 +806,20 @@ function SoftwareDetail() {
 
         <section className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">Integrasi</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Integrasi
+            </h2>
 
-            {software.integrations && software.integrations.length > 0 && (
-              <span className="text-sm text-gray-400">
-                {software.integrations.length} integrasi
-              </span>
-            )}
+            {software.integrations &&
+              software.integrations.length > 0 && (
+                <span className="text-sm text-gray-400">
+                  {software.integrations.length} integrasi
+                </span>
+              )}
           </div>
 
-          {software.integrations && software.integrations.length > 0 ? (
+          {software.integrations &&
+          software.integrations.length > 0 ? (
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
               {software.integrations.map((integration) => (
                 <div
@@ -541,7 +854,9 @@ function SoftwareDetail() {
         <section className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Review</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Review
+              </h2>
 
               <p className="mt-1 text-sm text-gray-500">
                 Pengalaman pengguna terhadap {software.name}.
@@ -558,7 +873,9 @@ function SoftwareDetail() {
           {/* Review Form */}
 
           <div className="mt-6 rounded-xl border border-gray-200 bg-gray-50 p-5">
-            <h3 className="font-medium text-gray-900">Berikan Review</h3>
+            <h3 className="font-medium text-gray-900">
+              Berikan Review
+            </h3>
 
             <p className="mt-1 text-sm text-gray-500">
               Bagikan pengalaman Anda menggunakan software ini.
@@ -593,23 +910,30 @@ function SoftwareDetail() {
                 type="button"
                 onClick={handleSubmitReview}
                 disabled={
-                  submittingReview || reviewText.trim().length < 10
+                  submittingReview ||
+                  reviewText.trim().length < 10
                 }
                 className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {submittingReview ? "Mengirim..." : "Kirim Review"}
+                {submittingReview
+                  ? "Mengirim..."
+                  : "Kirim Review"}
               </button>
             </div>
 
             {reviewError && (
               <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
-                <p className="text-sm text-red-600">{reviewError}</p>
+                <p className="text-sm text-red-600">
+                  {reviewError}
+                </p>
               </div>
             )}
 
             {reviewSuccess && (
               <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
-                <p className="text-sm text-green-600">{reviewSuccess}</p>
+                <p className="text-sm text-green-600">
+                  {reviewSuccess}
+                </p>
               </div>
             )}
           </div>
@@ -619,7 +943,9 @@ function SoftwareDetail() {
           <div className="mt-6">
             {loadingReviews ? (
               <div className="rounded-lg bg-gray-50 p-8 text-center">
-                <p className="text-sm text-gray-500">Memuat review...</p>
+                <p className="text-sm text-gray-500">
+                  Memuat review...
+                </p>
               </div>
             ) : reviews.length === 0 ? (
               <div className="rounded-lg bg-gray-50 p-8 text-center">
@@ -667,8 +993,12 @@ function SoftwareDetail() {
 
                       <button
                         type="button"
-                        onClick={() => handleDeleteReview(item.id)}
-                        disabled={deletingReviewId === item.id}
+                        onClick={() =>
+                          handleDeleteReview(item.id)
+                        }
+                        disabled={
+                          deletingReviewId === item.id
+                        }
                         className="rounded-lg px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         {deletingReviewId === item.id

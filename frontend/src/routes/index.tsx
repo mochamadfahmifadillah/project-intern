@@ -18,6 +18,7 @@ import Vendors from "../pages/Vendors/index";
 
 import SoftwareDirectory from "../pages/SoftwareDirectory/index";
 import SoftwareDetail from "../pages/SoftwareDetail/index";
+import SoftwareComparison from "../pages/SoftwareComparison/index";
 
 function AppRoutes() {
   return (
@@ -42,6 +43,12 @@ function AppRoutes() {
         {/* ---------------------------------------------------------------- */}
 
         <Route path="/software-directory/:slug" element={<SoftwareDetail />} />
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Public Software Comparison */}
+        {/* ---------------------------------------------------------------- */}
+
+        <Route path="/software-comparison" element={<SoftwareComparison />} />
 
         {/* ---------------------------------------------------------------- */}
         {/* Admin Pages */}

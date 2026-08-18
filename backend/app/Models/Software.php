@@ -79,4 +79,10 @@ class Software extends Model
 {
     return $this->hasMany(SoftwareReview::class);
 }
+
+public function ratings(): HasMany
+{
+    return $this->hasMany(SoftwareRating::class);
+}
+
 }
