@@ -40,4 +40,9 @@ class Software extends Model
     {
         return $this->hasMany(SoftwarePricing::class);
     }
+    
+    public function integrations(): HasMany
+{
+    return $this->hasMany(SoftwareIntegration::class);
+}
 }

@@ -13,6 +13,8 @@ import Profile from "../pages/Profile/index";
 import Software from "../pages/Software/index";
 import SoftwareCategories from "../pages/SoftwareCategories/index";
 import SoftwarePricings from "../pages/SoftwarePricings/index";
+import SoftwareIntegrations from "../pages/SoftwareIntegrations/index";
+import Vendors from "../pages/Vendors/index";
 
 function AppRoutes() {
   return (
@@ -24,21 +26,36 @@ function AppRoutes() {
 
         {/* Admin Pages */}
         <Route element={<MainLayout />}>
+          {/* Dashboard */}
           <Route path="/dashboard" element={<Dashboard />} />
+
+          {/* User Management */}
           <Route path="/users" element={<Users />} />
+
+          {/* Role & Permission Management */}
           <Route path="/roles" element={<Roles />} />
           <Route path="/permissions" element={<Permissions />} />
+
+          {/* Profile */}
           <Route path="/profile" element={<Profile />} />
 
+          {/* Software Management */}
           <Route path="/softwares" element={<Software />} />
+
+          {/* Software Categories */}
+          <Route path="/software-categories" element={<SoftwareCategories />} />
+
+          {/* Software Pricing */}
+          <Route path="/software-pricings" element={<SoftwarePricings />} />
+
+          {/* Software Integrations */}
           <Route
-            path="/software-categories"
-            element={<SoftwareCategories />}
+            path="/software-integrations"
+            element={<SoftwareIntegrations />}
           />
-          <Route
-            path="/software-pricings"
-            element={<SoftwarePricings />}
-          />
+
+          {/* Vendors */}
+          <Route path="/vendors" element={<Vendors />} />
         </Route>
       </Routes>
     </BrowserRouter>

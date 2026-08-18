@@ -5,9 +5,11 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SoftwareCategoryController;
 use App\Http\Controllers\SoftwareController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\SoftwareFeatureController;
+use App\Http\Controllers\SoftwareIntegrationController;
 use App\Http\Controllers\SoftwarePricingController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\VendorController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -140,7 +142,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::delete('/software-categories/{softwareCategory}', [SoftwareCategoryController::class, 'destroy'])
         ->middleware('permission:software-categories.delete');
-   /*
+
+
+    /*
     |--------------------------------------------------------------------------
     | Software Management
     |--------------------------------------------------------------------------
@@ -161,45 +165,108 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/softwares/{software}', [SoftwareController::class, 'destroy'])
         ->middleware('permission:softwares.delete');
 
-     /*
+
+    /*
     |--------------------------------------------------------------------------
     | Software Features
     |--------------------------------------------------------------------------
     */
-    
-         Route::get('/software-features', [SoftwareFeatureController::class, 'index'])
-    ->middleware('permission:software-features.view');
+
+    Route::get('/software-features', [SoftwareFeatureController::class, 'index'])
+        ->middleware('permission:software-features.view');
 
     Route::get('/software-features/{softwareFeature}', [SoftwareFeatureController::class, 'show'])
-    ->middleware('permission:software-features.view');
+        ->middleware('permission:software-features.view');
 
     Route::post('/software-features', [SoftwareFeatureController::class, 'store'])
-    ->middleware('permission:software-features.create');
+        ->middleware('permission:software-features.create');
 
     Route::put('/software-features/{softwareFeature}', [SoftwareFeatureController::class, 'update'])
-    ->middleware('permission:software-features.edit');
+        ->middleware('permission:software-features.edit');
 
     Route::delete('/software-features/{softwareFeature}', [SoftwareFeatureController::class, 'destroy'])
-    ->middleware('permission:software-features.delete');
+        ->middleware('permission:software-features.delete');
+
 
     /*
-|--------------------------------------------------------------------------
-| Software Pricing Management
-|--------------------------------------------------------------------------
-*/
+    |--------------------------------------------------------------------------
+    | Software Pricing Management
+    |--------------------------------------------------------------------------
+    */
 
-Route::get('/software-pricings', [SoftwarePricingController::class, 'index'])
-    ->middleware('permission:software-pricings.view');
+    Route::get('/software-pricings', [SoftwarePricingController::class, 'index'])
+        ->middleware('permission:software-pricings.view');
 
-Route::get('/software-pricings/{softwarePricing}', [SoftwarePricingController::class, 'show'])
-    ->middleware('permission:software-pricings.view');
+    Route::get('/software-pricings/{softwarePricing}', [SoftwarePricingController::class, 'show'])
+        ->middleware('permission:software-pricings.view');
 
-Route::post('/software-pricings', [SoftwarePricingController::class, 'store'])
-    ->middleware('permission:software-pricings.create');
+    Route::post('/software-pricings', [SoftwarePricingController::class, 'store'])
+        ->middleware('permission:software-pricings.create');
 
-Route::put('/software-pricings/{softwarePricing}', [SoftwarePricingController::class, 'update'])
-    ->middleware('permission:software-pricings.edit');
+    Route::put('/software-pricings/{softwarePricing}', [SoftwarePricingController::class, 'update'])
+        ->middleware('permission:software-pricings.edit');
 
-Route::delete('/software-pricings/{softwarePricing}', [SoftwarePricingController::class, 'destroy'])
-    ->middleware('permission:software-pricings.delete');
+    Route::delete('/software-pricings/{softwarePricing}', [SoftwarePricingController::class, 'destroy'])
+        ->middleware('permission:software-pricings.delete');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Software Integration Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/software-integrations', [
+        SoftwareIntegrationController::class,
+        'index',
+    ])->middleware('permission:software-integrations.view');
+
+    Route::post('/software-integrations', [
+        SoftwareIntegrationController::class,
+        'store',
+    ])->middleware('permission:software-integrations.create');
+
+    Route::get('/software-integrations/{softwareIntegration}', [
+        SoftwareIntegrationController::class,
+        'show',
+    ])->middleware('permission:software-integrations.view');
+
+    Route::put('/software-integrations/{softwareIntegration}', [
+        SoftwareIntegrationController::class,
+        'update',
+    ])->middleware('permission:software-integrations.edit');
+
+    Route::patch('/software-integrations/{softwareIntegration}', [
+        SoftwareIntegrationController::class,
+        'update',
+    ])->middleware('permission:software-integrations.edit');
+
+    Route::delete('/software-integrations/{softwareIntegration}', [
+        SoftwareIntegrationController::class,
+        'destroy',
+    ])->middleware('permission:software-integrations.delete');
+
+        /*
+    |--------------------------------------------------------------------------
+    | Vendor Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/vendors', [VendorController::class, 'index'])
+        ->middleware('permission:vendors.view');
+
+    Route::get('/vendors/{vendor}', [VendorController::class, 'show'])
+        ->middleware('permission:vendors.view');
+
+    Route::post('/vendors', [VendorController::class, 'store'])
+        ->middleware('permission:vendors.create');
+
+    Route::put('/vendors/{vendor}', [VendorController::class, 'update'])
+        ->middleware('permission:vendors.edit');
+
+    Route::patch('/vendors/{vendor}', [VendorController::class, 'update'])
+        ->middleware('permission:vendors.edit');
+
+    Route::delete('/vendors/{vendor}', [VendorController::class, 'destroy'])
+        ->middleware('permission:vendors.delete');
 });
