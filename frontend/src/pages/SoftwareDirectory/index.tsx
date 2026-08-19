@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  ArrowRight,
+  CheckCircle2,
+  Filter,
+  Search,
+  SlidersHorizontal,
+  Sparkles,
+  X,
+} from "lucide-react";
+
+import {
   getPublicSoftwareCategories,
   getPublicSoftwares,
   type Software,
@@ -37,7 +47,7 @@ function SoftwareDirectory() {
     } catch (error) {
       console.error("Gagal mengambil kategori software:", error);
 
-      setCategoryError("Gagal mengambil kategori software.");
+      setCategoryError("Gagal memuat kategori.");
       setCategories([]);
     } finally {
       setLoadingCategories(false);
@@ -76,7 +86,7 @@ function SoftwareDirectory() {
 
   /*
   |--------------------------------------------------------------------------
-  | Initial Categories
+  | Initial Load
   |--------------------------------------------------------------------------
   */
 
@@ -86,7 +96,7 @@ function SoftwareDirectory() {
 
   /*
   |--------------------------------------------------------------------------
-  | Search & Category Filter
+  | Search & Filter
   |--------------------------------------------------------------------------
   */
 
@@ -100,7 +110,7 @@ function SoftwareDirectory() {
 
   /*
   |--------------------------------------------------------------------------
-  | Reset Filter
+  | Helpers
   |--------------------------------------------------------------------------
   */
 
@@ -109,93 +119,401 @@ function SoftwareDirectory() {
     setCategory("");
   };
 
-  /*
-  |--------------------------------------------------------------------------
-  | Retry Software
-  |--------------------------------------------------------------------------
-  */
-
   const retryFetch = () => {
     fetchSoftwares(search, category);
   };
-
-  /*
-  |--------------------------------------------------------------------------
-  | Retry Categories
-  |--------------------------------------------------------------------------
-  */
 
   const retryCategories = () => {
     fetchCategories();
   };
 
+  const hasFilter = Boolean(search || category);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* ----------------------------------------------------------------- */}
-      {/* Header */}
-      {/* ----------------------------------------------------------------- */}
+    <div
+      className="min-h-screen"
+      style={{
+        backgroundColor: "var(--off-white)",
+      }}
+    >
+      {/* ================================================================
+          HERO / HEADER
+      ================================================================= */}
 
-      <section className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-12">
-          <p className="text-sm font-medium text-blue-600">
-            Software Directory
-          </p>
+      <section
+        className="
+          relative
+          isolate
+          overflow-hidden
+          border-b
+          px-4
+          pb-16
+          pt-28
+          sm:px-6
+          sm:pb-20
+          sm:pt-32
+          lg:px-8
+          lg:pb-24
+        "
+        style={{
+          backgroundColor: "var(--primary-dark)",
+        }}
+      >
+        {/* Background Glow */}
 
-          <h1 className="mt-2 text-3xl font-bold text-gray-900 md:text-4xl">
-            Temukan Software yang Tepat
-          </h1>
+        <div
+          className="
+            pointer-events-none
+            absolute
+            -left-32
+            -top-40
+            h-[420px]
+            w-[420px]
+            rounded-full
+            blur-[130px]
+          "
+          style={{
+            backgroundColor: "var(--lavender)",
+            opacity: 0.18,
+          }}
+        />
 
-          <p className="mt-3 max-w-2xl text-gray-500">
-            Jelajahi berbagai software berdasarkan kategori dan kebutuhan Anda.
-          </p>
-        </div>
-      </section>
+        <div
+          className="
+            pointer-events-none
+            absolute
+            -bottom-48
+            -right-20
+            h-[420px]
+            w-[420px]
+            rounded-full
+            blur-[130px]
+          "
+          style={{
+            backgroundColor: "var(--accent-yellow)",
+            opacity: 0.08,
+          }}
+        />
 
-      {/* ----------------------------------------------------------------- */}
-      {/* Content */}
-      {/* ----------------------------------------------------------------- */}
+        <div className="relative mx-auto max-w-7xl">
+          {/* Breadcrumb */}
 
-      <main className="mx-auto max-w-7xl px-6 py-10">
-        {/* ---------------------------------------------------------------- */}
-        {/* Filter */}
-        {/* ---------------------------------------------------------------- */}
+          <div className="mb-7 flex items-center gap-2 text-xs text-white/45">
+            <Link to="/" className="transition-colors hover:text-white">
+              Home
+            </Link>
 
-        <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_220px_auto]">
-            {/* Search */}
+            <span>/</span>
 
-            <div>
-              <label
-                htmlFor="search"
-                className="mb-2 block text-sm font-medium text-gray-700"
+            <span className="text-white/70">Software Directory</span>
+          </div>
+
+          {/* Heading */}
+
+          <div className="max-w-3xl">
+            <div
+              className="
+                mb-5
+                inline-flex
+                items-center
+                gap-2
+                rounded-full
+                border
+                px-4
+                py-2
+              "
+              style={{
+                borderColor: "rgba(255,255,255,0.16)",
+                backgroundColor: "rgba(255,255,255,0.08)",
+                color: "var(--lavender)",
+              }}
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+
+              <span className="text-xs font-semibold">
+                Software Discovery Platform
+              </span>
+            </div>
+
+            <h1
+              className="
+                text-4xl
+                font-bold
+                leading-[1.05]
+                tracking-tight
+                text-white
+                sm:text-5xl
+                lg:text-6xl
+              "
+            >
+              Temukan software yang
+              <span
+                className="block"
+                style={{
+                  color: "var(--lavender)",
+                }}
               >
-                Cari Software
-              </label>
+                tepat untuk bisnis Anda.
+              </span>
+            </h1>
+
+            <p
+              className="
+                mt-6
+                max-w-2xl
+                text-sm
+                leading-7
+                sm:text-base
+                lg:text-lg
+              "
+              style={{
+                color: "rgba(255,255,255,0.68)",
+              }}
+            >
+              Jelajahi berbagai software bisnis berdasarkan kategori, kebutuhan,
+              dan solusi yang ingin Anda temukan.
+            </p>
+          </div>
+
+          {/* ============================================================
+              SEARCH BOX
+          ========================================================== */}
+
+          <div
+            className="
+              mt-9
+              max-w-4xl
+              rounded-2xl
+              border
+              p-2
+              shadow-2xl
+            "
+            style={{
+              backgroundColor: "rgba(255,255,255,0.1)",
+              borderColor: "rgba(255,255,255,0.16)",
+            }}
+          >
+            <div className="relative flex items-center">
+              <Search
+                className="
+                  absolute
+                  left-4
+                  h-5
+                  w-5
+                "
+                style={{
+                  color: "var(--primary)",
+                }}
+              />
 
               <input
                 id="search"
                 type="text"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Contoh: Figma, Slack, Notion..."
+                placeholder="Cari software, kategori, atau solusi..."
                 autoComplete="off"
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="
+                  h-14
+                  w-full
+                  rounded-xl
+                  border-0
+                  bg-white
+                  pl-12
+                  pr-12
+                  text-sm
+                  text-gray-900
+                  outline-none
+                  placeholder:text-gray-400
+                  focus:ring-4
+                  focus:ring-white/20
+                  sm:h-16
+                "
               />
+
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="
+                    absolute
+                    right-3
+                    flex
+                    h-8
+                    w-8
+                    items-center
+                    justify-center
+                    rounded-lg
+                    text-gray-400
+                    transition
+                    hover:bg-gray-100
+                    hover:text-gray-700
+                  "
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Quick Categories */}
+
+          {!loadingCategories && categories.length > 0 && (
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-xs text-white/40">Explore:</span>
+
+              {categories.slice(0, 5).map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setCategory(item.slug)}
+                  className="
+                    rounded-full
+                    border
+                    px-3
+                    py-1.5
+                    text-xs
+                    font-medium
+                    text-white/70
+                    transition-all
+                    hover:border-white/30
+                    hover:bg-white/10
+                    hover:text-white
+                  "
+                  style={{
+                    borderColor:
+                      category === item.slug
+                        ? "var(--accent-yellow)"
+                        : "rgba(255,255,255,0.12)",
+                    backgroundColor:
+                      category === item.slug
+                        ? "rgba(255,211,97,0.12)"
+                        : "rgba(255,255,255,0.04)",
+                  }}
+                >
+                  {item.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ================================================================
+          MAIN CONTENT
+      ================================================================= */}
+
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+        {/* ============================================================
+            FILTER BAR
+        ========================================================== */}
+
+        <div
+          className="
+            mb-8
+            rounded-2xl
+            border
+            bg-white
+            p-4
+            shadow-sm
+            sm:p-5
+          "
+          style={{
+            borderColor: "rgba(0,0,0,0.07)",
+          }}
+        >
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+            {/* Search */}
+
+            <div className="flex-1">
+              <label
+                htmlFor="directory-search"
+                className="
+                  mb-2
+                  flex
+                  items-center
+                  gap-2
+                  text-xs
+                  font-semibold
+                  uppercase
+                  tracking-wide
+                  text-gray-500
+                "
+              >
+                <Search className="h-3.5 w-3.5" />
+                Search
+              </label>
+
+              <div className="relative">
+                <input
+                  id="directory-search"
+                  type="text"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search software..."
+                  className="
+                    h-11
+                    w-full
+                    rounded-xl
+                    border
+                    border-gray-200
+                    bg-gray-50
+                    px-4
+                    text-sm
+                    text-gray-900
+                    outline-none
+                    transition
+                    focus:border-[var(--primary)]
+                    focus:bg-white
+                    focus:ring-4
+                    focus:ring-[var(--primary)]/10
+                  "
+                />
+
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    className="
+                      absolute
+                      right-3
+                      top-1/2
+                      -translate-y-1/2
+                      text-gray-400
+                      hover:text-gray-700
+                    "
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Category */}
 
-            <div>
+            <div className="w-full lg:w-64">
               <label
                 htmlFor="category"
-                className="mb-2 block text-sm font-medium text-gray-700"
+                className="
+                  mb-2
+                  flex
+                  items-center
+                  gap-2
+                  text-xs
+                  font-semibold
+                  uppercase
+                  tracking-wide
+                  text-gray-500
+                "
               >
-                Kategori
+                <Filter className="h-3.5 w-3.5" />
+                Category
               </label>
 
               {categoryError ? (
-                <div className="flex gap-2">
-                  <div className="flex flex-1 items-center rounded-lg border border-red-200 bg-red-50 px-4 py-2.5">
+                <div className="flex h-11 gap-2">
+                  <div className="flex flex-1 items-center rounded-xl border border-red-200 bg-red-50 px-3">
                     <span className="text-xs text-red-600">
                       {categoryError}
                     </span>
@@ -204,7 +522,17 @@ function SoftwareDirectory() {
                   <button
                     type="button"
                     onClick={retryCategories}
-                    className="rounded-lg border border-gray-300 px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                    className="
+                      rounded-xl
+                      border
+                      border-gray-200
+                      px-4
+                      text-xs
+                      font-semibold
+                      text-gray-700
+                      transition
+                      hover:bg-gray-50
+                    "
                   >
                     Retry
                   </button>
@@ -215,12 +543,30 @@ function SoftwareDirectory() {
                   value={category}
                   onChange={(event) => setCategory(event.target.value)}
                   disabled={loadingCategories}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-gray-100"
+                  className="
+                    h-11
+                    w-full
+                    rounded-xl
+                    border
+                    border-gray-200
+                    bg-gray-50
+                    px-4
+                    text-sm
+                    text-gray-700
+                    outline-none
+                    transition
+                    focus:border-[var(--primary)]
+                    focus:bg-white
+                    focus:ring-4
+                    focus:ring-[var(--primary)]/10
+                    disabled:cursor-not-allowed
+                    disabled:opacity-60
+                  "
                 >
                   <option value="">
                     {loadingCategories
-                      ? "Memuat kategori..."
-                      : "Semua Kategori"}
+                      ? "Loading categories..."
+                      : "All Categories"}
                   </option>
 
                   {!loadingCategories &&
@@ -235,68 +581,261 @@ function SoftwareDirectory() {
 
             {/* Reset */}
 
-            <div className="flex items-end">
-              <button
-                type="button"
-                onClick={resetFilter}
-                disabled={!search && !category}
-                className="w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
-              >
-                Reset
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={resetFilter}
+              disabled={!hasFilter}
+              className="
+                flex
+                h-11
+                items-center
+                justify-center
+                gap-2
+                rounded-xl
+                border
+                border-gray-200
+                px-5
+                text-sm
+                font-semibold
+                text-gray-700
+                transition
+                hover:bg-gray-50
+                disabled:cursor-not-allowed
+                disabled:opacity-40
+                lg:w-auto
+              "
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Reset
+            </button>
           </div>
         </div>
 
-        {/* ---------------------------------------------------------------- */}
-        {/* Loading */}
-        {/* ---------------------------------------------------------------- */}
+        {/* ============================================================
+            RESULT HEADER
+        ========================================================== */}
 
-        {loading && (
-          <div className="rounded-xl border border-gray-200 bg-white p-10 text-center">
-            <p className="text-gray-500">Memuat software...</p>
+        {!loading && !error && (
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-500">
+                {softwares.length > 0
+                  ? "Software ditemukan"
+                  : "Hasil pencarian"}
+              </p>
+
+              <div className="mt-1 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-gray-900">
+                  {softwares.length} software
+                </h2>
+
+                {hasFilter && (
+                  <span
+                    className="
+                      rounded-full
+                      px-2.5
+                      py-1
+                      text-[10px]
+                      font-bold
+                    "
+                    style={{
+                      backgroundColor: "var(--lavender-soft)",
+                      color: "var(--primary)",
+                    }}
+                  >
+                    Filter aktif
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <CheckCircle2 className="h-4 w-4" />
+              Verified software directory
+            </div>
           </div>
         )}
 
-        {/* ---------------------------------------------------------------- */}
-        {/* Error */}
-        {/* ---------------------------------------------------------------- */}
+        {/* ============================================================
+            LOADING
+        ========================================================== */}
+
+        {loading && (
+          <div
+            className="
+              grid
+              grid-cols-1
+              gap-5
+              sm:grid-cols-2
+              lg:grid-cols-3
+            "
+          >
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div
+                key={index}
+                className="
+                  overflow-hidden
+                  rounded-2xl
+                  border
+                  border-gray-100
+                  bg-white
+                  p-6
+                  shadow-sm
+                "
+              >
+                <div className="flex justify-between">
+                  <div className="h-14 w-14 animate-pulse rounded-xl bg-gray-100" />
+
+                  <div className="h-6 w-16 animate-pulse rounded-full bg-gray-100" />
+                </div>
+
+                <div className="mt-5 h-5 w-2/3 animate-pulse rounded bg-gray-100" />
+
+                <div className="mt-3 h-5 w-24 animate-pulse rounded-full bg-gray-100" />
+
+                <div className="mt-5 space-y-2">
+                  <div className="h-3 w-full animate-pulse rounded bg-gray-100" />
+                  <div className="h-3 w-5/6 animate-pulse rounded bg-gray-100" />
+                  <div className="h-3 w-2/3 animate-pulse rounded bg-gray-100" />
+                </div>
+
+                <div className="mt-6 h-4 w-24 animate-pulse rounded bg-gray-100" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ============================================================
+            ERROR
+        ========================================================== */}
 
         {!loading && error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
-            <h2 className="font-semibold text-red-700">Terjadi Kesalahan</h2>
+          <div
+            className="
+              rounded-2xl
+              border
+              border-red-200
+              bg-white
+              px-6
+              py-16
+              text-center
+              shadow-sm
+            "
+          >
+            <div
+              className="
+                mx-auto
+                flex
+                h-14
+                w-14
+                items-center
+                justify-center
+                rounded-2xl
+              "
+              style={{
+                backgroundColor: "#FEF2F2",
+              }}
+            >
+              <X className="h-6 w-6 text-red-500" />
+            </div>
 
-            <p className="mt-2 text-sm text-red-600">{error}</p>
+            <h2 className="mt-5 text-lg font-bold text-gray-900">
+              Terjadi kesalahan
+            </h2>
+
+            <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">
+              {error}
+            </p>
 
             <button
               type="button"
               onClick={retryFetch}
-              className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700"
+              className="
+                mt-6
+                rounded-xl
+                px-5
+                py-2.5
+                text-sm
+                font-semibold
+                text-white
+                transition
+                hover:-translate-y-0.5
+              "
+              style={{
+                backgroundColor: "var(--primary)",
+              }}
             >
               Coba Lagi
             </button>
           </div>
         )}
 
-        {/* ---------------------------------------------------------------- */}
-        {/* Empty */}
-        {/* ---------------------------------------------------------------- */}
+        {/* ============================================================
+            EMPTY
+        ========================================================== */}
 
         {!loading && !error && softwares.length === 0 && (
-          <div className="rounded-xl border border-gray-200 bg-white p-10 text-center">
-            <h2 className="font-semibold text-gray-900">
+          <div
+            className="
+              rounded-2xl
+              border
+              border-gray-100
+              bg-white
+              px-6
+              py-20
+              text-center
+              shadow-sm
+            "
+          >
+            <div
+              className="
+                mx-auto
+                flex
+                h-16
+                w-16
+                items-center
+                justify-center
+                rounded-2xl
+              "
+              style={{
+                backgroundColor: "var(--lavender-soft)",
+              }}
+            >
+              <Search
+                className="h-7 w-7"
+                style={{
+                  color: "var(--primary)",
+                }}
+              />
+            </div>
+
+            <h2 className="mt-6 text-xl font-bold text-gray-900">
               Software tidak ditemukan
             </h2>
 
-            <p className="mt-2 text-sm text-gray-500">
-              Coba gunakan kata kunci atau kategori yang berbeda.
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
+              Tidak ada software yang cocok dengan pencarian atau kategori yang
+              Anda pilih.
             </p>
 
-            {(search || category) && (
+            {hasFilter && (
               <button
                 type="button"
                 onClick={resetFilter}
-                className="mt-5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                className="
+                  mt-6
+                  rounded-xl
+                  px-5
+                  py-2.5
+                  text-sm
+                  font-semibold
+                  text-white
+                  transition
+                  hover:-translate-y-0.5
+                "
+                style={{
+                  backgroundColor: "var(--primary)",
+                }}
               >
                 Reset Filter
               </button>
@@ -304,89 +843,219 @@ function SoftwareDirectory() {
           </div>
         )}
 
-        {/* ---------------------------------------------------------------- */}
-        {/* Result */}
-        {/* ---------------------------------------------------------------- */}
+        {/* ============================================================
+            SOFTWARE GRID
+        ========================================================== */}
 
         {!loading && !error && softwares.length > 0 && (
-          <>
-            {/* Result Count */}
+          <div
+            className="
+              grid
+              grid-cols-1
+              gap-5
+              sm:grid-cols-2
+              lg:grid-cols-3
+            "
+          >
+            {softwares.map((software) => (
+              <Link
+                key={software.id}
+                to={`/software-directory/${software.slug}`}
+                className="
+                  group
+                  relative
+                  overflow-hidden
+                  rounded-2xl
+                  border
+                  border-gray-100
+                  bg-white
+                  p-6
+                  shadow-sm
+                  transition-all
+                  duration-300
+                  hover:-translate-y-1.5
+                  hover:border-purple-100
+                  hover:shadow-xl
+                  focus:outline-none
+                  focus:ring-4
+                  focus:ring-purple-100
+                "
+              >
+                {/* Top Accent */}
 
-            <div className="mb-6 flex items-center justify-between">
-              <p className="text-sm text-gray-500">
-                Menampilkan{" "}
-                <span className="font-medium text-gray-900">
-                  {softwares.length}
-                </span>{" "}
-                software
-              </p>
+                <div
+                  className="
+                    absolute
+                    left-0
+                    top-0
+                    h-1
+                    w-0
+                    transition-all
+                    duration-300
+                    group-hover:w-full
+                  "
+                  style={{
+                    backgroundColor: "var(--primary)",
+                  }}
+                />
 
-              {(search || category) && (
-                <p className="text-sm text-gray-400">Filter aktif</p>
-              )}
-            </div>
+                {/* Header */}
 
-            {/* Software Grid */}
-
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {softwares.map((software) => (
-                <Link
-                  key={software.id}
-                  to={`/software-directory/${software.slug}`}
-                  className="group block rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
-                  {/* Logo + Status */}
-
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-gray-100">
-                      {software.logo ? (
-                        <img
-                          src={software.logo}
-                          alt={`Logo ${software.name}`}
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <span className="text-lg font-bold text-gray-400">
-                          {software.name.charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-
-                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                      Active
-                    </span>
+                <div className="flex items-start justify-between gap-4">
+                  <div
+                    className="
+                      flex
+                      h-14
+                      w-14
+                      shrink-0
+                      items-center
+                      justify-center
+                      overflow-hidden
+                      rounded-2xl
+                    "
+                    style={{
+                      backgroundColor: "var(--lavender-soft)",
+                    }}
+                  >
+                    {software.logo ? (
+                      <img
+                        src={software.logo}
+                        alt={`Logo ${software.name}`}
+                        className="
+                          h-full
+                          w-full
+                          object-cover
+                          transition-transform
+                          duration-300
+                          group-hover:scale-105
+                        "
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span
+                        className="text-lg font-black"
+                        style={{
+                          color: "var(--primary)",
+                        }}
+                      >
+                        {software.name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </div>
 
-                  {/* Name */}
+                  <span
+                    className="
+                      inline-flex
+                      items-center
+                      gap-1.5
+                      rounded-full
+                      px-2.5
+                      py-1
+                      text-[10px]
+                      font-bold
+                    "
+                    style={{
+                      backgroundColor: "#ECFDF3",
+                      color: "#15803D",
+                    }}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                    Active
+                  </span>
+                </div>
 
-                  <h2 className="mt-5 text-lg font-semibold text-gray-900 transition group-hover:text-blue-600">
+                {/* Content */}
+
+                <div className="mt-5">
+                  <h2
+                    className="
+                      text-lg
+                      font-bold
+                      tracking-tight
+                      text-gray-900
+                      transition-colors
+                      group-hover:text-[var(--primary)]
+                    "
+                  >
                     {software.name}
                   </h2>
 
-                  {/* Category */}
-
                   {software.category && (
-                    <span className="mt-2 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
+                    <span
+                      className="
+                        mt-2
+                        inline-flex
+                        rounded-full
+                        px-2.5
+                        py-1
+                        text-[10px]
+                        font-bold
+                      "
+                      style={{
+                        backgroundColor: "var(--lavender-soft)",
+                        color: "var(--primary)",
+                      }}
+                    >
                       {software.category.name}
                     </span>
                   )}
 
-                  {/* Description */}
-
                   <p className="mt-4 line-clamp-3 text-sm leading-6 text-gray-500">
                     {software.description || "Tidak ada deskripsi software."}
                   </p>
+                </div>
 
-                  {/* Detail */}
+                {/* Bottom */}
 
-                  <span className="mt-5 inline-flex text-sm font-medium text-blue-600 transition group-hover:text-blue-700">
-                    Lihat Detail →
+                <div
+                  className="
+                    mt-6
+                    flex
+                    items-center
+                    justify-between
+                    border-t
+                    border-gray-100
+                    pt-4
+                  "
+                >
+                  <div className="flex items-center gap-3">
+                    {software.rating !== undefined &&
+                      software.rating !== null && (
+                        <span className="flex items-center gap-1 text-xs font-semibold text-gray-700">
+                          <span className="text-yellow-500">★</span>
+
+                          {Number(software.rating).toFixed(1)}
+                        </span>
+                      )}
+
+                    {software.reviews !== undefined && (
+                      <span className="text-xs text-gray-400">
+                        {software.reviews} reviews
+                      </span>
+                    )}
+                  </div>
+
+                  <span
+                    className="
+                      flex
+                      items-center
+                      gap-1
+                      text-xs
+                      font-bold
+                      transition-all
+                      group-hover:gap-2
+                    "
+                    style={{
+                      color: "var(--primary)",
+                    }}
+                  >
+                    Lihat detail
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </span>
-                </Link>
-              ))}
-            </div>
-          </>
+                </div>
+              </Link>
+            ))}
+          </div>
         )}
       </main>
     </div>

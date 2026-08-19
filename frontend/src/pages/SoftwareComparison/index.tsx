@@ -57,11 +57,23 @@ const SoftwareComparison = () => {
   */
 
   const softwareSlugs = useMemo(() => {
-    return searchParams
-      .getAll("software")
-      .map((slug) => slug.trim())
-      .filter(Boolean);
+    return Array.from(
+      new Set(
+        searchParams
+          .getAll("software")
+          .map((slug) => slug.trim())
+          .filter(Boolean),
+      ),
+    );
   }, [searchParams]);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Stable Slug Key
+  |--------------------------------------------------------------------------
+  */
+
+  const softwareSlugKey = softwareSlugs.join(",");
 
   /*
   |--------------------------------------------------------------------------
@@ -70,29 +82,94 @@ const SoftwareComparison = () => {
   */
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchComparison = async () => {
+      /*
+      |--------------------------------------------------------------------------
+      | Validate Selection
+      |--------------------------------------------------------------------------
+      */
+
       if (softwareSlugs.length < 2) {
-        setSoftwares([]);
-        setError("Minimal pilih 2 software untuk dibandingkan.");
-        setLoading(false);
+        if (!cancelled) {
+          setSoftwares([]);
+          setError("Minimal pilih 2 software untuk dibandingkan.");
+          setLoading(false);
+        }
+
         return;
       }
 
       if (softwareSlugs.length > 4) {
-        setSoftwares([]);
-        setError("Maksimal 4 software dapat dibandingkan.");
-        setLoading(false);
+        if (!cancelled) {
+          setSoftwares([]);
+          setError("Maksimal 4 software dapat dibandingkan.");
+          setLoading(false);
+        }
+
         return;
       }
 
+      /*
+      |--------------------------------------------------------------------------
+      | Request
+      |--------------------------------------------------------------------------
+      */
+
       try {
-        setLoading(true);
-        setError("");
+        if (!cancelled) {
+          setLoading(true);
+          setError("");
+        }
 
         const response = await getSoftwareComparison(softwareSlugs);
 
-        setSoftwares(response.data);
+        /*
+        |--------------------------------------------------------------------------
+        | Normalize API Response
+        |--------------------------------------------------------------------------
+        |
+        | Kemungkinan response:
+        |
+        | 1. { data: [...] }
+        |
+        | 2. { data: { data: [...] } }
+        |
+        */
+
+        const responseData = response?.data;
+
+        let comparisonData: SoftwareComparisonItem[] = [];
+
+        if (Array.isArray(responseData)) {
+          comparisonData = responseData;
+        } else if (Array.isArray(responseData?.data)) {
+          comparisonData = responseData.data;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Response
+        |--------------------------------------------------------------------------
+        */
+
+        if (!Array.isArray(comparisonData)) {
+          throw new Error("Format data comparison dari server tidak valid.");
+        }
+
+        if (!cancelled) {
+          setSoftwares(comparisonData);
+
+          if (comparisonData.length < 2) {
+            setError("Data software yang ditemukan kurang dari 2.");
+          }
+        }
       } catch (err: any) {
+        if (cancelled) {
+          return;
+        }
+
         console.error("Gagal mengambil comparison:", err);
 
         setSoftwares([]);
@@ -103,12 +180,18 @@ const SoftwareComparison = () => {
             "Gagal mengambil data perbandingan software.",
         );
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     fetchComparison();
-  }, [softwareSlugs]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [softwareSlugKey]);
 
   /*
   |--------------------------------------------------------------------------
@@ -301,16 +384,17 @@ const SoftwareComparison = () => {
                             src={software.logo}
                             alt={software.name}
                             className="h-14 w-14 rounded-xl border border-gray-200 object-contain p-2"
+                            loading="lazy"
                           />
                         ) : (
-                          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gray-100 text-lg font-bold text-gray-500">
-                            {software.name.charAt(0).toUpperCase()}
+                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-lg font-bold text-gray-500">
+                            {(software.name || "S").charAt(0).toUpperCase()}
                           </div>
                         )}
 
                         <div className="min-w-0">
                           <h2 className="text-lg font-bold text-gray-900">
-                            {software.name}
+                            {software.name || "Software"}
                           </h2>
 
                           {software.category && (
@@ -388,23 +472,36 @@ const SoftwareComparison = () => {
                     <span className="font-semibold text-gray-900">Rating</span>
                   </td>
 
-                  {softwares.map((software) => (
-                    <td key={software.id} className="p-5">
-                      <div className="flex items-center gap-2">
-                        <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                  {softwares.map((software) => {
+                    const ratingValue =
+                      software.average_rating !== undefined &&
+                      software.average_rating !== null &&
+                      !Number.isNaN(Number(software.average_rating))
+                        ? Number(software.average_rating).toFixed(1)
+                        : "0.0";
 
-                        <span className="font-bold text-gray-900">
-                          {software.average_rating !== undefined
-                            ? Number(software.average_rating).toFixed(1)
-                            : "0.0"}
-                        </span>
+                    const totalRatings =
+                      software.total_ratings !== undefined &&
+                      software.total_ratings !== null
+                        ? software.total_ratings
+                        : 0;
 
-                        <span className="text-sm text-gray-500">
-                          ({software.total_ratings ?? 0} rating)
-                        </span>
-                      </div>
-                    </td>
-                  ))}
+                    return (
+                      <td key={software.id} className="p-5">
+                        <div className="flex items-center gap-2">
+                          <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+
+                          <span className="font-bold text-gray-900">
+                            {ratingValue}
+                          </span>
+
+                          <span className="text-sm text-gray-500">
+                            ({totalRatings} rating)
+                          </span>
+                        </div>
+                      </td>
+                    );
+                  })}
                 </tr>
 
                 {/*
@@ -418,40 +515,46 @@ const SoftwareComparison = () => {
                     <span className="font-semibold text-gray-900">Fitur</span>
                   </td>
 
-                  {softwares.map((software) => (
-                    <td key={software.id} className="p-5 align-top">
-                      {software.features && software.features.length > 0 ? (
-                        <ul className="space-y-3">
-                          {software.features.map((feature) => (
-                            <li
-                              key={feature.id}
-                              className="flex items-start gap-2"
-                            >
-                              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-50">
-                                <Check className="h-3.5 w-3.5 text-green-600" />
-                              </span>
+                  {softwares.map((software) => {
+                    const features = Array.isArray(software.features)
+                      ? software.features
+                      : [];
 
-                              <div>
-                                <p className="text-sm font-medium text-gray-800">
-                                  {feature.name}
-                                </p>
+                    return (
+                      <td key={software.id} className="p-5 align-top">
+                        {features.length > 0 ? (
+                          <ul className="space-y-3">
+                            {features.map((feature) => (
+                              <li
+                                key={feature.id}
+                                className="flex items-start gap-2"
+                              >
+                                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-50">
+                                  <Check className="h-3.5 w-3.5 text-green-600" />
+                                </span>
 
-                                {feature.description && (
-                                  <p className="mt-0.5 text-xs leading-5 text-gray-500">
-                                    {feature.description}
+                                <div>
+                                  <p className="text-sm font-medium text-gray-800">
+                                    {feature.name}
                                   </p>
-                                )}
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <span className="text-sm text-gray-400">
-                          Tidak ada data fitur.
-                        </span>
-                      )}
-                    </td>
-                  ))}
+
+                                  {feature.description && (
+                                    <p className="mt-0.5 text-xs leading-5 text-gray-500">
+                                      {feature.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <span className="text-sm text-gray-400">
+                            Tidak ada data fitur.
+                          </span>
+                        )}
+                      </td>
+                    );
+                  })}
                 </tr>
 
                 {/*
@@ -465,42 +568,48 @@ const SoftwareComparison = () => {
                     <span className="font-semibold text-gray-900">Pricing</span>
                   </td>
 
-                  {softwares.map((software) => (
-                    <td key={software.id} className="p-5 align-top">
-                      {software.pricings && software.pricings.length > 0 ? (
-                        <div className="space-y-3">
-                          {software.pricings.map((pricing) => (
-                            <div
-                              key={pricing.id}
-                              className="rounded-xl border border-gray-200 p-3"
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div>
-                                  <p className="text-sm font-semibold text-gray-900">
-                                    {pricing.name}
-                                  </p>
+                  {softwares.map((software) => {
+                    const pricings = Array.isArray(software.pricings)
+                      ? software.pricings
+                      : [];
 
-                                  {pricing.description && (
-                                    <p className="mt-1 text-xs leading-5 text-gray-500">
-                                      {pricing.description}
+                    return (
+                      <td key={software.id} className="p-5 align-top">
+                        {pricings.length > 0 ? (
+                          <div className="space-y-3">
+                            {pricings.map((pricing) => (
+                              <div
+                                key={pricing.id}
+                                className="rounded-xl border border-gray-200 p-3"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-sm font-semibold text-gray-900">
+                                      {pricing.name || "Pricing Plan"}
                                     </p>
-                                  )}
-                                </div>
 
-                                <span className="shrink-0 text-sm font-bold text-[#362EED]">
-                                  {formatPrice(pricing.price)}
-                                </span>
+                                    {pricing.description && (
+                                      <p className="mt-1 text-xs leading-5 text-gray-500">
+                                        {pricing.description}
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  <span className="shrink-0 text-sm font-bold text-[#362EED]">
+                                    {formatPrice(pricing.price)}
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-sm text-gray-400">
-                          Tidak ada data pricing.
-                        </span>
-                      )}
-                    </td>
-                  ))}
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400">
+                            Tidak ada data pricing.
+                          </span>
+                        )}
+                      </td>
+                    );
+                  })}
                 </tr>
 
                 {/*
@@ -516,30 +625,35 @@ const SoftwareComparison = () => {
                     </span>
                   </td>
 
-                  {softwares.map((software) => (
-                    <td key={software.id} className="p-5 align-top">
-                      {software.integrations &&
-                      software.integrations.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {software.integrations.map((integration) => (
-                            <span
-                              key={integration.id}
-                              className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700"
-                              title={
-                                integration.description || integration.name
-                              }
-                            >
-                              {integration.name}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-sm text-gray-400">
-                          Tidak ada data integrasi.
-                        </span>
-                      )}
-                    </td>
-                  ))}
+                  {softwares.map((software) => {
+                    const integrations = Array.isArray(software.integrations)
+                      ? software.integrations
+                      : [];
+
+                    return (
+                      <td key={software.id} className="p-5 align-top">
+                        {integrations.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {integrations.map((integration) => (
+                              <span
+                                key={integration.id}
+                                className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700"
+                                title={
+                                  integration.description || integration.name
+                                }
+                              >
+                                {integration.name}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400">
+                            Tidak ada data integrasi.
+                          </span>
+                        )}
+                      </td>
+                    );
+                  })}
                 </tr>
 
                 {/*
