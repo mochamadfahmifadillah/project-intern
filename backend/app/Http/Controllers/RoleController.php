@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -14,11 +13,14 @@ class RoleController extends Controller
      */
     public function index()
     {
-        return response()->json(
-            Role::with('permissions')
-                ->orderBy('name')
-                ->get()
-        );
+        $roles = Role::with('permissions')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json([
+            'message' => 'Data role berhasil diambil.',
+            'data' => $roles,
+        ]);
     }
 
     /**
@@ -26,9 +28,12 @@ class RoleController extends Controller
      */
     public function show(Role $role)
     {
-        return response()->json(
-            $role->load('permissions')
-        );
+        $role->load('permissions');
+
+        return response()->json([
+            'message' => 'Detail role berhasil diambil.',
+            'data' => $role,
+        ]);
     }
 
     /**
@@ -68,8 +73,8 @@ class RoleController extends Controller
         );
 
         return response()->json([
-            'message' => 'Role berhasil dibuat',
-            'role' => $role->load('permissions'),
+            'message' => 'Role berhasil dibuat.',
+            'data' => $role->load('permissions'),
         ], 201);
     }
 
@@ -110,8 +115,8 @@ class RoleController extends Controller
         );
 
         return response()->json([
-            'message' => 'Role berhasil diperbarui',
-            'role' => $role->fresh('permissions'),
+            'message' => 'Role berhasil diperbarui.',
+            'data' => $role->fresh('permissions'),
         ]);
     }
 
@@ -123,7 +128,7 @@ class RoleController extends Controller
         $role->delete();
 
         return response()->json([
-            'message' => 'Role berhasil dihapus',
+            'message' => 'Role berhasil dihapus.',
         ]);
     }
 }

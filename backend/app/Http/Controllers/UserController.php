@@ -14,9 +14,12 @@ class UserController extends Controller
      */
     public function index()
     {
-        return response()->json(
-            User::with('roles')->get()
-        );
+        $users = User::with('roles')->get();
+
+        return response()->json([
+            'message' => 'Data user berhasil diambil.',
+            'data' => $users,
+        ]);
     }
 
     /**
@@ -24,9 +27,12 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return response()->json(
-            $user->load('roles')
-        );
+        $user->load('roles');
+
+        return response()->json([
+            'message' => 'Detail user berhasil diambil.',
+            'data' => $user,
+        ]);
     }
 
     /**
@@ -72,8 +78,8 @@ class UserController extends Controller
         }
 
         return response()->json([
-            'message' => 'User berhasil dibuat',
-            'user' => $user->fresh()->load('roles'),
+            'message' => 'User berhasil dibuat.',
+            'data' => $user->fresh()->load('roles'),
         ], 201);
     }
 
@@ -110,10 +116,10 @@ class UserController extends Controller
          * User hanya memiliki satu role.
          *
          * Jika role_id dikirim:
-         *   role lama diganti dengan role baru.
+         * role lama diganti dengan role baru.
          *
-         * Jika role_id null:
-         *   semua role user dihapus.
+         * Jika role_id tidak dikirim:
+         * semua role user dihapus.
          */
         $user->roles()->sync(
             $request->filled('role_id')
@@ -122,8 +128,8 @@ class UserController extends Controller
         );
 
         return response()->json([
-            'message' => 'User berhasil diperbarui',
-            'user' => $user->fresh()->load('roles'),
+            'message' => 'User berhasil diperbarui.',
+            'data' => $user->fresh()->load('roles'),
         ]);
     }
 
@@ -135,7 +141,7 @@ class UserController extends Controller
         $user->delete();
 
         return response()->json([
-            'message' => 'User berhasil dihapus',
+            'message' => 'User berhasil dihapus.',
         ]);
     }
 }

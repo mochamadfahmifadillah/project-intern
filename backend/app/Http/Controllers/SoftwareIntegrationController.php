@@ -14,7 +14,7 @@ class SoftwareIntegrationController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Software integrations retrieved successfully',
+            'message' => 'Data integrasi software berhasil diambil.',
             'data' => $integrations,
         ]);
     }
@@ -33,7 +33,7 @@ class SoftwareIntegrationController extends Controller
         $integration = SoftwareIntegration::create($validated);
 
         return response()->json([
-            'message' => 'Software integration created successfully',
+            'message' => 'Integrasi software berhasil dibuat.',
             'data' => $integration->load('software'),
         ], 201);
     }
@@ -43,7 +43,7 @@ class SoftwareIntegrationController extends Controller
         $softwareIntegration->load('software');
 
         return response()->json([
-            'message' => 'Software integration retrieved successfully',
+            'message' => 'Detail integrasi software berhasil diambil.',
             'data' => $softwareIntegration,
         ]);
     }
@@ -64,7 +64,7 @@ class SoftwareIntegrationController extends Controller
         $softwareIntegration->update($validated);
 
         return response()->json([
-            'message' => 'Software integration updated successfully',
+            'message' => 'Integrasi software berhasil diperbarui.',
             'data' => $softwareIntegration->fresh()->load('software'),
         ]);
     }
@@ -74,7 +74,7 @@ class SoftwareIntegrationController extends Controller
         $softwareIntegration->delete();
 
         return response()->json([
-            'message' => 'Software integration deleted successfully',
+            'message' => 'Integrasi software berhasil dihapus.',
         ]);
     }
 }

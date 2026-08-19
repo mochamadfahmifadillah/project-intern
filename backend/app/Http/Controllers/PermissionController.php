@@ -13,9 +13,12 @@ class PermissionController extends Controller
      */
     public function index()
     {
-        return response()->json(
-            Permission::orderBy('name')->get()
-        );
+        $permissions = Permission::orderBy('name')->get();
+
+        return response()->json([
+            'message' => 'Data permission berhasil diambil.',
+            'data' => $permissions,
+        ]);
     }
 
     /**
@@ -23,7 +26,10 @@ class PermissionController extends Controller
      */
     public function show(Permission $permission)
     {
-        return response()->json($permission);
+        return response()->json([
+            'message' => 'Detail permission berhasil diambil.',
+            'data' => $permission,
+        ]);
     }
 
     /**
@@ -51,8 +57,8 @@ class PermissionController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Permission berhasil dibuat',
-            'permission' => $permission,
+            'message' => 'Permission berhasil dibuat.',
+            'data' => $permission,
         ], 201);
     }
 
@@ -82,8 +88,8 @@ class PermissionController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Permission berhasil diperbarui',
-            'permission' => $permission->fresh(),
+            'message' => 'Permission berhasil diperbarui.',
+            'data' => $permission->fresh(),
         ]);
     }
 
@@ -95,8 +101,7 @@ class PermissionController extends Controller
         $permission->delete();
 
         return response()->json([
-            'message' => 'Permission berhasil dihapus',
+            'message' => 'Permission berhasil dihapus.',
         ]);
     }
 }
-
