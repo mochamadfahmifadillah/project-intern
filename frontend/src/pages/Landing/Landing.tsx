@@ -7,144 +7,185 @@ import type { Software, Category } from "../../types/software";
 
 import Navbar from "../../components/Landing/Navbar";
 import HeroSection from "../../components/Landing/HeroSection";
-import ProblemSection from "../../components/Landing/ProblemSection";
+import StatsSection from "../../components/Landing/StatsSection";
 import CategoriesSection from "../../components/Landing/CategoriesSection";
-import DirectorySection from "../../components/Landing/DirectorySection";
-import HowItWorksSection from "../../components/Landing/HowItWorksSection";
-
-// bikin setelahnya
-import EcosystemSection from "../../components/Landing/EcosystemSection";
-import AIRecommendationSection from "../../components/Landing/AIRecommendationSection";
-import CTASection from "../../components/Landing/CTASection";
+import FeaturedSoftwareSection from "../../components/Landing/FeaturedSoftwareSection";
+import ListingCTASection from "../../components/Landing/ListingCTASection";
 import Footer from "../../components/Landing/Footer";
 
 export default function Landing() {
+  // =========================
+  // DATA
+  // =========================
+
   const [softwareData, setSoftwareData] = useState<Software[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+
+  // =========================
+  // LOADING
+  // =========================
 
   const [loadingSoftware, setLoadingSoftware] = useState(true);
   const [loadingCategories, setLoadingCategories] = useState(true);
 
-  const [activeCategory, setActiveCategory] = useState("all");
+  // =========================
+  // SEARCH
+  // =========================
 
   const [heroInput, setHeroInput] = useState("");
-  const [dirSearch, setDirSearch] = useState("");
+
+  // =========================
+  // CATEGORY
+  // =========================
+
+  const [activeCategory, setActiveCategory] = useState("all");
+
+  // =========================
+  // INITIAL DATA
+  // =========================
 
   useEffect(() => {
-    const fetchSoftware = async () => {
-      try {
-        setLoadingSoftware(true);
+    let mounted = true;
 
-        const response = await getSoftwares();
+    const initialize = async () => {
+      const [softwareResponse, categoryResponse] = await Promise.allSettled([
+        getSoftwares(),
+        getSoftwareCategories(),
+      ]);
+
+      if (!mounted) return;
+
+      // SOFTWARE
+
+      if (softwareResponse.status === "fulfilled") {
+        const response = softwareResponse.value;
         const data = response?.data ?? response;
 
         setSoftwareData(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Failed to fetch softwares:", error);
-        setSoftwareData([]);
-      } finally {
-        setLoadingSoftware(false);
+      } else {
+        console.error("Failed to fetch softwares:", softwareResponse.reason);
       }
-    };
 
-    fetchSoftware();
-  }, []);
+      // CATEGORIES
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoadingCategories(true);
-
-        const response = await getSoftwareCategories();
+      if (categoryResponse.status === "fulfilled") {
+        const response = categoryResponse.value;
         const data = response?.data ?? response;
 
         setCategories(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
-        setCategories([]);
-      } finally {
-        setLoadingCategories(false);
+      } else {
+        console.error("Failed to fetch categories:", categoryResponse.reason);
       }
+
+      setLoadingSoftware(false);
+      setLoadingCategories(false);
     };
 
-    fetchCategories();
+    initialize();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const displayedSoftware = softwareData.filter((software) => {
-    const search = dirSearch.toLowerCase().trim();
-
-    const matchesSearch =
-      !search ||
-      software.name?.toLowerCase().includes(search) ||
-      software.category?.toLowerCase().includes(search) ||
-      software.description?.toLowerCase().includes(search);
-
-    const matchesCategory =
-      activeCategory === "all" ||
-      String(software.category_id) === activeCategory ||
-      software.category?.toLowerCase() === activeCategory.toLowerCase();
-
-    return matchesSearch && matchesCategory;
-  });
+  // =========================
+  // NAVIGATION
+  // =========================
 
   const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({
+    if (id === "top") {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      return;
+    }
+
+    const element = document.getElementById(id);
+
+    if (!element) return;
+
+    element.scrollIntoView({
       behavior: "smooth",
+      block: "start",
     });
   };
 
-  const handleHeroSearch = () => {
-    setDirSearch(heroInput);
+  // =========================
+  // HERO SEARCH
+  // =========================
+
+  const handleSearch = () => {
+    const query = heroInput.trim();
+
+    if (!query) {
+      scrollTo("directory");
+      return;
+    }
+
+    // nanti bisa diarahkan ke directory
+    // dengan query parameter
+
     scrollTo("directory");
   };
 
-  const handleCategoryClick = (category: Category) => {
+  // =========================
+  // CATEGORY
+  // =========================
+
+  const handleCategory = (category: Category) => {
     setActiveCategory(String(category.id));
+
     scrollTo("directory");
   };
+
+  // =========================
+  // FILTER
+  // =========================
+
+  const displayedSoftware = softwareData.filter((software) => {
+    if (activeCategory === "all") {
+      return true;
+    }
+
+    return String(software.category_id) === activeCategory;
+  });
+
+  // =========================
+  // RENDER
+  // =========================
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div id="top" className="min-h-screen bg-white">
       <Navbar onNavigate={scrollTo} />
 
       <HeroSection
         value={heroInput}
         onChange={setHeroInput}
-        onSearch={handleHeroSearch}
-        onCompare={() => scrollTo("directory")}
+        onSearch={handleSearch}
       />
 
-      <ProblemSection />
+      <StatsSection />
 
       <CategoriesSection
         categories={categories}
         loading={loadingCategories}
-        onSelect={handleCategoryClick}
-      />
-
-      <DirectorySection
-        software={displayedSoftware}
-        categories={categories}
-        loading={loadingSoftware}
-        search={dirSearch}
         activeCategory={activeCategory}
-        onSearchChange={setDirSearch}
-        onCategoryChange={setActiveCategory}
-        onClearFilters={() => {
-          setActiveCategory("all");
-          setDirSearch("");
-        }}
+        onSelect={handleCategory}
       />
 
-      <HowItWorksSection />
+      <FeaturedSoftwareSection
+        software={displayedSoftware}
+        loading={loadingSoftware}
+        onViewAll={() => (window.location.href = "/software-directory")}
+      />
 
-      <EcosystemSection />
+      <ListingCTASection
+        onListSoftware={() => (window.location.href = "/login")}
+      />
 
-      <AIRecommendationSection />
-
-      <CTASection onExplore={() => scrollTo("directory")} />
-
-      <Footer />
+      <Footer onNavigate={scrollTo} />
     </div>
   );
 }

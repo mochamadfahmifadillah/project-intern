@@ -1,85 +1,255 @@
-import { AlertCircle, Layers, TrendingUp, Zap } from "lucide-react";
+import {
+  AlertCircle,
+  Layers,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
 
 import SectionLabel from "./SectionLabel";
 
 const PROBLEMS = [
   {
     icon: Layers,
-    title: "Too many choices",
+    number: "01",
+    title: "Terlalu banyak pilihan",
     description:
-      "Too many software options make it difficult to identify the right solution for your business.",
-    accentColor: "text-blue-600",
-    bgColor: "bg-blue-50",
-    borderHover: "hover:border-blue-200",
+      "Banyaknya pilihan software membuat bisnis kesulitan menentukan solusi yang benar-benar sesuai dengan kebutuhan.",
   },
   {
     icon: AlertCircle,
-    title: "Scattered information",
+    number: "02",
+    title: "Informasi tersebar",
     description:
-      "Pricing, features, reviews, and software information are often spread across different sources.",
-    accentColor: "text-violet-600",
-    bgColor: "bg-violet-50",
-    borderHover: "hover:border-violet-200",
+      "Informasi mengenai fitur, harga, ulasan, dan integrasi sering kali tersebar di berbagai sumber.",
   },
   {
     icon: Zap,
-    title: "Integration complexity",
+    number: "03",
+    title: "Sulit menilai kecocokan",
     description:
-      "Choosing software that does not fit your existing workflow can create unnecessary complexity.",
-    accentColor: "text-emerald-600",
-    bgColor: "bg-emerald-50",
-    borderHover: "hover:border-emerald-200",
+      "Memilih software yang tidak sesuai dengan kebutuhan dan workflow dapat menambah kompleksitas operasional.",
   },
   {
     icon: TrendingUp,
-    title: "Wrong decisions",
+    number: "04",
+    title: "Risiko keputusan yang salah",
     description:
-      "The wrong software decision can waste time, budget, and resources for your organization.",
-    accentColor: "text-red-600",
-    bgColor: "bg-red-50",
-    borderHover: "hover:border-red-200",
+      "Keputusan software yang kurang tepat dapat membuang waktu, anggaran, dan sumber daya bisnis.",
   },
 ];
 
 export default function ProblemSection() {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <SectionLabel>The Problem</SectionLabel>
+    <section
+      className="
+        relative
+        isolate
+        overflow-hidden
+        px-4
+        py-24
+        sm:px-6
+        sm:py-28
+        lg:px-8
+        lg:py-32
+      "
+      style={{
+        backgroundColor: "var(--primary)",
+      }}
+    >
+      {/* Decorative Glow */}
+      <div
+        className="
+          pointer-events-none
+          absolute
+          -top-40
+          left-1/2
+          h-[500px]
+          w-[800px]
+          -translate-x-1/2
+          rounded-full
+          blur-[130px]
+        "
+        style={{
+          backgroundColor: "var(--lavender)",
+          opacity: 0.22,
+        }}
+      />
 
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
-            Software selection is complicated.
+      <div
+        className="
+          pointer-events-none
+          absolute
+          -bottom-40
+          -left-32
+          h-[400px]
+          w-[400px]
+          rounded-full
+          blur-[120px]
+        "
+        style={{
+          backgroundColor: "var(--lavender-soft)",
+          opacity: 0.16,
+        }}
+      />
+
+      {/* Content */}
+      <div className="relative mx-auto max-w-7xl">
+        {/* Section Header */}
+        <div className="mx-auto mb-16 max-w-2xl text-center">
+          <SectionLabel>Masalah yang Dihadapi</SectionLabel>
+
+          <h2
+            className="
+              mt-4
+              text-3xl
+              font-bold
+              leading-tight
+              tracking-tight
+              text-white
+              sm:text-4xl
+              lg:text-5xl
+            "
+          >
+            Memilih software seharusnya
+            <span
+              className="block"
+              style={{
+                color: "var(--lavender)",
+              }}
+            >
+              tidak serumit ini.
+            </span>
           </h2>
 
-          <p className="text-slate-500 mt-4 max-w-xl mx-auto leading-relaxed">
-            Businesses need better ways to discover and evaluate software before
-            making important technology decisions.
+          <p
+            className="
+              mx-auto
+              mt-5
+              max-w-xl
+              text-sm
+              leading-7
+              sm:text-base
+            "
+            style={{
+              color: "rgba(255, 255, 255, 0.72)",
+            }}
+          >
+            Bisnis membutuhkan cara yang lebih sederhana untuk menemukan,
+            memahami, dan mengevaluasi software sebelum mengambil keputusan
+            teknologi.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* Problem Cards */}
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {PROBLEMS.map((problem) => {
             const Icon = problem.icon;
 
             return (
               <div
                 key={problem.title}
-                className={`bg-slate-50 rounded-xl p-6 border border-slate-100 ${problem.borderHover} hover:shadow-sm transition-all`}
+                className="
+                  group
+                  relative
+                  overflow-hidden
+                  rounded-2xl
+                  border
+                  bg-white
+                  p-6
+                  transition-all
+                  duration-300
+                  hover:-translate-y-1
+                  hover:shadow-2xl
+                "
+                style={{
+                  borderColor: "rgba(255, 255, 255, 0.2)",
+                }}
               >
-                <div
-                  className={`w-10 h-10 rounded-lg ${problem.bgColor} flex items-center justify-center mb-4`}
+                {/* Number */}
+                <span
+                  className="
+                    absolute
+                    right-5
+                    top-5
+                    text-xs
+                    font-bold
+                  "
+                  style={{
+                    color: "var(--lavender-soft)",
+                  }}
                 >
-                  <Icon className={`w-5 h-5 ${problem.accentColor}`} />
+                  {problem.number}
+                </span>
+
+                {/* Icon */}
+                <div
+                  className="
+                    mb-6
+                    flex
+                    h-12
+                    w-12
+                    items-center
+                    justify-center
+                    rounded-xl
+                    transition-transform
+                    duration-300
+                    group-hover:scale-105
+                  "
+                  style={{
+                    backgroundColor: "var(--lavender-soft)",
+                  }}
+                >
+                  <Icon
+                    className="h-5 w-5"
+                    style={{
+                      color: "var(--primary)",
+                    }}
+                  />
                 </div>
 
-                <h3 className="font-semibold text-slate-900 mb-2 text-sm">
+                {/* Title */}
+                <h3
+                  className="
+                    mb-3
+                    text-base
+                    font-semibold
+                  "
+                  style={{
+                    color: "var(--text-primary)",
+                  }}
+                >
                   {problem.title}
                 </h3>
 
-                <p className="text-xs text-slate-500 leading-relaxed">
+                {/* Description */}
+                <p
+                  className="
+                    text-sm
+                    leading-6
+                  "
+                  style={{
+                    color: "#777777",
+                  }}
+                >
                   {problem.description}
                 </p>
+
+                {/* Bottom Accent */}
+                <div
+                  className="
+                    absolute
+                    bottom-0
+                    left-0
+                    h-1
+                    w-0
+                    transition-all
+                    duration-300
+                    group-hover:w-full
+                  "
+                  style={{
+                    backgroundColor: "var(--accent-yellow)",
+                  }}
+                />
               </div>
             );
           })}

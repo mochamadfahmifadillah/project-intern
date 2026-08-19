@@ -1,82 +1,101 @@
 import { useState } from "react";
-import { Globe, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface NavbarProps {
   onNavigate: (id: string) => void;
 }
 
-const NAV_LINKS = [
-  { label: "Products", target: "directory" },
-  { label: "Categories", target: "categories" },
-  { label: "Compare", target: "directory" },
-  { label: "Pricing", target: "pricing" },
-  { label: "Blog", target: "blog" },
-];
-
 export default function Navbar({ onNavigate }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleNavigate = (target: string) => {
-    onNavigate(target);
+  const navigate = useNavigate();
+
+  const closeMobile = () => {
     setMobileOpen(false);
+  };
+
+  const handleHome = () => {
+    closeMobile();
+    onNavigate("top");
+  };
+
+  const handleDirectory = () => {
+    closeMobile();
+    navigate("/software-directory");
+  };
+
+  const handleCompare = () => {
+    closeMobile();
+    navigate("/software-comparison");
+  };
+
+  const handleAdmin = () => {
+    closeMobile();
+    navigate("/admin");
+  };
+
+  const handleSignIn = () => {
+    closeMobile();
+    navigate("/login");
   };
 
   return (
     <nav className="fixed top-0 inset-x-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="h-16 flex items-center justify-between">
           {/* LOGO */}
+
           <button
             type="button"
-            onClick={() => handleNavigate("top")}
-            className="flex items-center gap-2.5"
+            onClick={handleHome}
+            className="flex items-center"
           >
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Globe className="w-4 h-4 text-white" />
-            </div>
-
-            <span className="font-semibold text-slate-900 text-sm">
+            <span className="text-lg font-bold tracking-tight text-slate-900">
               Software Empire
             </span>
           </button>
 
-          {/* DESKTOP NAVIGATION */}
-          <div className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => handleNavigate(item.target)}
-                className="text-sm text-slate-500 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+          {/* DESKTOP */}
 
-          {/* DESKTOP ACTIONS */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-1">
             <button
-              type="button"
-              className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
+              onClick={handleDirectory}
+              className="px-3 py-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
             >
-              Sign in
+              Directory
             </button>
 
             <button
-              type="button"
-              className="text-sm bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors"
+              onClick={handleCompare}
+              className="px-3 py-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
             >
-              Get started
+              Compare
             </button>
           </div>
 
-          {/* MOBILE MENU BUTTON */}
+          <div className="hidden lg:flex items-center gap-4">
+            <button
+              onClick={handleAdmin}
+              className="text-sm text-slate-600 hover:text-slate-900"
+            >
+              Admin
+            </button>
+
+            <button
+              onClick={handleSignIn}
+              className="text-sm font-medium text-slate-900"
+            >
+              Sign In
+            </button>
+          </div>
+
+          {/* MOBILE */}
+
           <button
             type="button"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            className="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-50"
             onClick={() => setMobileOpen((value) => !value)}
+            className="lg:hidden p-2 rounded-lg hover:bg-slate-100"
           >
             {mobileOpen ? (
               <X className="w-5 h-5" />
@@ -88,27 +107,36 @@ export default function Navbar({ onNavigate }: NavbarProps) {
       </div>
 
       {/* MOBILE MENU */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-slate-100 bg-white px-4 py-4">
-          <div className="space-y-1">
-            {NAV_LINKS.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => handleNavigate(item.target)}
-                className="block w-full text-left text-sm text-slate-600 py-2.5 px-2 rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
 
-          <div className="pt-3 border-t border-slate-100 mt-3">
+      {mobileOpen && (
+        <div className="lg:hidden border-t border-slate-100 bg-white px-4 py-4">
+          <div className="space-y-1">
             <button
-              type="button"
-              className="w-full text-sm bg-slate-900 text-white px-4 py-2.5 rounded-lg hover:bg-slate-700 transition-colors"
+              onClick={handleDirectory}
+              className="w-full text-left px-3 py-2.5 text-sm text-slate-600 rounded-lg hover:bg-slate-50"
             >
-              Get started
+              Directory
+            </button>
+
+            <button
+              onClick={handleCompare}
+              className="w-full text-left px-3 py-2.5 text-sm text-slate-600 rounded-lg hover:bg-slate-50"
+            >
+              Compare
+            </button>
+
+            <button
+              onClick={handleAdmin}
+              className="w-full text-left px-3 py-2.5 text-sm text-slate-600 rounded-lg hover:bg-slate-50"
+            >
+              Admin
+            </button>
+
+            <button
+              onClick={handleSignIn}
+              className="w-full text-left px-3 py-2.5 text-sm text-slate-600 rounded-lg hover:bg-slate-50"
+            >
+              Sign In
             </button>
           </div>
         </div>

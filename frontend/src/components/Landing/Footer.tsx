@@ -1,85 +1,88 @@
-import { Globe } from "lucide-react";
+interface FooterProps {
+  onNavigate: (id: string) => void;
+}
 
-const FOOTER_COLUMNS = [
-  {
-    title: "Product",
-    links: ["Directory", "Compare", "Marketplace", "Reviews", "API"],
-  },
-  {
-    title: "Company",
-    links: ["About", "Blog", "Careers", "Press", "Contact"],
-  },
-  {
-    title: "Resources",
-    links: ["Guides", "Documentation", "Community", "Changelog", "Status"],
-  },
-];
-
-const LEGAL_LINKS = ["Privacy Policy", "Terms of Service", "Cookie Policy"];
-
-export default function Footer() {
+export default function Footer({ onNavigate }: FooterProps) {
   return (
-    <footer className="bg-[#080F1E] px-4 sm:px-6 lg:px-8 py-16">
-      <div className="max-w-7xl mx-auto">
-        {/* MAIN FOOTER */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+    <footer className="border-t border-slate-200 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
           {/* BRAND */}
-          <div className="col-span-2">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Globe className="w-3.5 h-3.5 text-white" />
-              </div>
 
-              <span className="font-semibold text-white text-sm">
-                Software Empire
-              </span>
-            </div>
+          <div className="col-span-2 md:col-span-1">
+            <h3 className="font-bold text-slate-900">Software Empire</h3>
 
-            <p className="text-slate-500 text-sm leading-relaxed max-w-xs">
-              A software discovery and decision platform for modern businesses.
+            <p className="text-sm text-slate-500 mt-3 leading-relaxed">
+              Indonesia's premier B2B software discovery platform for modern
+              businesses.
             </p>
           </div>
 
-          {/* FOOTER COLUMNS */}
-          {FOOTER_COLUMNS.map((column) => (
-            <div key={column.title}>
-              <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">
-                {column.title}
-              </h5>
+          {/* PLATFORM */}
 
-              <ul className="space-y-2.5">
-                {column.links.map((link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      className="text-sm text-slate-500 hover:text-white transition-colors"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+          <div>
+            <h4 className="text-sm font-semibold text-slate-900 mb-4">
+              Platform
+            </h4>
+
+            <div className="space-y-3 text-sm text-slate-500">
+              <button
+                onClick={() => onNavigate("directory")}
+                className="block hover:text-slate-900"
+              >
+                Directory
+              </button>
+
+              <button className="block hover:text-slate-900">Compare</button>
+
+              <button className="block hover:text-slate-900">Reviews</button>
+
+              <button
+                onClick={() => onNavigate("categories")}
+                className="block hover:text-slate-900"
+              >
+                Categories
+              </button>
             </div>
-          ))}
+          </div>
+
+          {/* COMPANY */}
+
+          <div>
+            <h4 className="text-sm font-semibold text-slate-900 mb-4">
+              Company
+            </h4>
+
+            <div className="space-y-3 text-sm text-slate-500">
+              <button className="block hover:text-slate-900">About Us</button>
+              <button className="block hover:text-slate-900">Blog</button>
+              <button className="block hover:text-slate-900">Careers</button>
+              <button className="block hover:text-slate-900">Press</button>
+            </div>
+          </div>
+
+          {/* SUPPORT */}
+
+          <div>
+            <h4 className="text-sm font-semibold text-slate-900 mb-4">
+              Support
+            </h4>
+
+            <div className="space-y-3 text-sm text-slate-500">
+              <button className="block hover:text-slate-900">
+                Help Center
+              </button>
+              <button className="block hover:text-slate-900">Contact</button>
+              <button className="block hover:text-slate-900">Terms</button>
+              <button className="block hover:text-slate-900">Privacy</button>
+            </div>
+          </div>
         </div>
 
-        {/* BOTTOM FOOTER */}
-        <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-slate-600">
-            © {new Date().getFullYear()} Software Empire. All rights reserved.
+        <div className="mt-12 pt-6 border-t border-slate-100">
+          <p className="text-xs text-slate-400">
+            © 2024 Software Empire. All rights reserved.
           </p>
-
-          <div className="flex items-center gap-5">
-            {LEGAL_LINKS.map((item) => (
-              <a
-                key={item}
-                href="#"
-                className="text-xs text-slate-600 hover:text-slate-400 transition-colors"
-              >
-                {item}
-              </a>
-            ))}
-          </div>
         </div>
       </div>
     </footer>

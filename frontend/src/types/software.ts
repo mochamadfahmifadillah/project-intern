@@ -16,6 +16,8 @@ export interface Software {
 export interface Category {
   id: number | string;
   name: string;
+  slug: string;
   description?: string;
+  icon?: string;
   softwares_count?: number;
 }

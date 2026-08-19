@@ -1,89 +1,85 @@
-import { ArrowRight, ChevronRight, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 interface HeroSectionProps {
   value: string;
   onChange: (value: string) => void;
   onSearch: () => void;
-  onCompare: () => void;
 }
+
+const POPULAR_SEARCHES = [
+  "Accounting",
+  "HR & Payroll",
+  "CRM",
+  "Project Management",
+  "POS",
+];
 
 export default function HeroSection({
   value,
   onChange,
   onSearch,
-  onCompare,
 }: HeroSectionProps) {
   return (
-    <section
-      id="top"
-      className="bg-slate-900 pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
-    >
-      <div
-        className="absolute inset-0 opacity-[0.025]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)",
-          backgroundSize: "80px 80px",
-        }}
-      />
-
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-600/10 rounded-full blur-3xl" />
-
-      <div className="max-w-4xl mx-auto text-center relative">
-        <div className="inline-flex items-center gap-2 bg-white/[0.07] border border-white/[0.12] rounded-full px-4 py-1.5 mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-
-          <span className="text-xs text-slate-300 font-medium">
-            Software discovery platform for modern businesses
-          </span>
-        </div>
-
-        <h1 className="text-[2.6rem] sm:text-5xl lg:text-[3.5rem] font-bold text-white leading-[1.1] tracking-tight mb-6">
-          Find the right software
-          <br />
-          <span className="text-blue-400">for your business.</span>
-        </h1>
-
-        <p className="text-slate-400 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-          Discover, compare, and understand software solutions so your business
-          can make better technology decisions.
+    <section className="pt-32 pb-20 bg-white">
+      <div className="max-w-5xl mx-auto px-4 text-center">
+        <p className="text-sm font-medium text-blue-600 mb-5">
+          1,247 software listed across 89 categories
         </p>
 
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            onSearch();
-          }}
-          className="flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto mb-5"
-        >
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
+          Find the right software
+          <br />
+          for your business.
+        </h1>
+
+        <p className="max-w-2xl mx-auto mt-6 text-lg text-slate-500 leading-relaxed">
+          Discover, compare, and review business software trusted by 50,000+
+          Indonesian companies, startups, and UMKM.
+        </p>
+
+        {/* SEARCH */}
+
+        <div className="max-w-2xl mx-auto mt-9">
+          <div className="flex items-center gap-3 p-2 bg-white border border-slate-200 rounded-xl shadow-sm">
+            <Search className="w-5 h-5 text-slate-400 ml-3" />
 
             <input
               type="text"
               value={value}
-              onChange={(event) => onChange(event.target.value)}
-              placeholder="Search software, category, or feature..."
-              className="w-full pl-11 pr-4 py-3.5 bg-white rounded-xl text-slate-900 text-sm outline-none"
+              onChange={(e) => onChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  onSearch();
+                }
+              }}
+              placeholder="Search software..."
+              className="flex-1 px-2 py-3 outline-none text-sm text-slate-900 placeholder:text-slate-400"
             />
+
+            <button
+              onClick={onSearch}
+              className="px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Search
+            </button>
           </div>
+        </div>
 
-          <button
-            type="submit"
-            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-xl font-semibold text-sm"
-          >
-            Explore Software
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </form>
+        {/* POPULAR */}
 
-        <button
-          onClick={onCompare}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white"
-        >
-          Compare Software
-          <ChevronRight className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-5">
+          <span className="text-xs text-slate-400">Popular:</span>
+
+          {POPULAR_SEARCHES.map((item) => (
+            <button
+              key={item}
+              onClick={() => onChange(item)}
+              className="text-xs text-slate-500 hover:text-blue-600 transition-colors"
+            >
+              {item}
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   );

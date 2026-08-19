@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import Landing from "../pages/Landing/Landing";
 import Login from "../pages/Login/Login";
@@ -24,37 +24,28 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* ---------------------------------------------------------------- */}
-        {/* Public Pages */}
-        {/* ---------------------------------------------------------------- */}
+        {/* ================================================================ */}
+        {/* PUBLIC */}
+        {/* ================================================================ */}
 
         <Route path="/" element={<Landing />} />
 
         <Route path="/login" element={<Login />} />
 
-        {/* ---------------------------------------------------------------- */}
-        {/* Public Software Directory */}
-        {/* ---------------------------------------------------------------- */}
-
         <Route path="/software-directory" element={<SoftwareDirectory />} />
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Public Software Detail */}
-        {/* ---------------------------------------------------------------- */}
 
         <Route path="/software-directory/:slug" element={<SoftwareDetail />} />
 
-        {/* ---------------------------------------------------------------- */}
-        {/* Public Software Comparison */}
-        {/* ---------------------------------------------------------------- */}
-
         <Route path="/software-comparison" element={<SoftwareComparison />} />
 
-        {/* ---------------------------------------------------------------- */}
-        {/* Admin Pages */}
-        {/* ---------------------------------------------------------------- */}
+        {/* ================================================================ */}
+        {/* ADMIN */}
+        {/* ================================================================ */}
 
         <Route element={<MainLayout />}>
+          {/* Admin root → Dashboard */}
+          <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
+
           {/* Dashboard */}
           <Route path="/dashboard" element={<Dashboard />} />
 
@@ -87,6 +78,12 @@ function AppRoutes() {
           {/* Vendors */}
           <Route path="/vendors" element={<Vendors />} />
         </Route>
+
+        {/* ================================================================ */}
+        {/* FALLBACK */}
+        {/* ================================================================ */}
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,75 +1,85 @@
-import { ChevronRight, Layers } from "lucide-react";
 import type { Category } from "../../types/software";
-import SectionLabel from "./SectionLabel";
 
 interface CategoriesSectionProps {
   categories: Category[];
   loading: boolean;
+  activeCategory: string;
   onSelect: (category: Category) => void;
 }
 
 export default function CategoriesSection({
   categories,
   loading,
+  activeCategory,
   onSelect,
 }: CategoriesSectionProps) {
   return (
-    <section id="categories" className="py-24 px-4 sm:px-6 lg:px-8 bg-slate-50">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-12">
-          <div>
-            <SectionLabel>Categories</SectionLabel>
+    <section className="py-20 bg-white" id="categories">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-slate-900">
+            Browse by category
+          </h2>
 
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
-              Explore by category.
-            </h2>
-          </div>
-
-          <button className="hidden sm:flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900">
-            View all
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          <p className="text-sm text-slate-500 mt-2">
+            {categories.length} categories
+          </p>
         </div>
 
+        <button
+          type="button"
+          onClick={() => {
+            // handle all category dari parent
+          }}
+          className={`mb-4 px-4 py-2 rounded-lg text-sm border transition-colors ${
+            activeCategory === "all"
+              ? "bg-blue-600 text-white border-blue-600"
+              : "border-slate-200 text-slate-600 hover:border-slate-300"
+          }`}
+        >
+          All categories
+        </button>
+
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-            {Array.from({ length: 7 }).map((_, index) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {Array.from({ length: 12 }).map((_, index) => (
               <div
                 key={index}
-                className="h-32 rounded-xl bg-white border border-slate-100 animate-pulse"
+                className="h-24 rounded-xl bg-slate-100 animate-pulse"
               />
             ))}
           </div>
         ) : categories.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl border border-slate-100">
-            <Layers className="w-8 h-8 text-slate-300 mx-auto mb-3" />
-
-            <p className="text-sm font-medium text-slate-700">
-              No categories available
-            </p>
-
-            <p className="text-xs text-slate-400 mt-1">
-              Software categories will appear here once available.
-            </p>
+          <div className="py-12 text-center">
+            <p className="text-sm text-slate-500">No categories found.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {categories.map((category) => (
               <button
                 key={category.id}
+                type="button"
                 onClick={() => onSelect(category)}
-                className="group bg-white rounded-xl border border-slate-100 p-4 text-left hover:border-blue-200 hover:shadow-md transition-all"
+                className={`text-left p-4 rounded-xl border transition-colors ${
+                  activeCategory === category.slug
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-slate-200 hover:border-blue-200 hover:bg-blue-50/30"
+                }`}
               >
-                <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center mb-3">
-                  <Layers className="w-4 h-4 text-slate-500 group-hover:text-blue-600" />
-                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-xl">
+                    {category.icon ?? "📁"}
+                  </div>
 
-                <div className="text-sm font-semibold text-slate-800">
-                  {category.name}
-                </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">
+                      {category.name}
+                    </p>
 
-                <div className="text-xs text-slate-400 mt-1">
-                  {category.softwares_count ?? 0} tools
+                    <p className="text-xs text-slate-400 mt-1">
+                      {category.softwares_count ?? 0} products
+                    </p>
+                  </div>
                 </div>
               </button>
             ))}

@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+:root {
+  --primary: #704FE6;
+  --primary-dark: #6F4FDE;
+
+  --lavender: #DEC8FE;
+  --lavender-soft: #DBC8F6;
+
+  --accent-yellow: #FFD361;
+
+  --white: #FFFFFF;
+  --off-white: #FBFBFB;
+  --gray: #F1F1F3;
+
+  --text-primary: #111111;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -13,8 +29,6 @@ body,
 
 body {
   font-family: Arial, Helvetica, sans-serif;
-  background: #ffffff;
-  color: #000000;
 }
 
 .login-loader-large {

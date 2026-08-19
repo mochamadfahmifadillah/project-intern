@@ -17,18 +17,19 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Public Routes
+| Public API Routes
 |--------------------------------------------------------------------------
 */
 
 /*
 |--------------------------------------------------------------------------
-| Test API
+| Test
 |--------------------------------------------------------------------------
 */
 
 Route::get('/test', function () {
     return response()->json([
+        'success' => true,
         'message' => 'API Laravel berhasil!',
     ]);
 });
@@ -47,18 +48,23 @@ Route::post('/register', [
 Route::post('/login', [
     AuthController::class,
     'login',
-]);
+])->name('login');
 
 /*
 |--------------------------------------------------------------------------
 | Public Software Directory
 |--------------------------------------------------------------------------
-|
+*/
+
+/*
+|--------------------------------------------------------------------------
 | GET /api/software-directory
-| GET /api/software-directory?search=figma
-| GET /api/software-directory?category=design
-| GET /api/software-directory?search=figma&category=design
-|
+|--------------------------------------------------------------------------
+| Optional query:
+| ?search=figma
+| ?category=design
+| ?search=figma&category=design
+|--------------------------------------------------------------------------
 */
 
 Route::get('/software-directory', [
@@ -68,11 +74,8 @@ Route::get('/software-directory', [
 
 /*
 |--------------------------------------------------------------------------
-| Public Software Detail
-|--------------------------------------------------------------------------
-|
 | GET /api/software-directory/{slug}
-|
+|--------------------------------------------------------------------------
 */
 
 Route::get('/software-directory/{slug}', [
@@ -84,9 +87,6 @@ Route::get('/software-directory/{slug}', [
 |--------------------------------------------------------------------------
 | Public Software Reviews
 |--------------------------------------------------------------------------
-|
-| GET /api/software-directory/{software}/reviews
-|
 */
 
 Route::get('/software-directory/{software}/reviews', [
@@ -98,14 +98,6 @@ Route::get('/software-directory/{software}/reviews', [
 |--------------------------------------------------------------------------
 | Public Software Ratings
 |--------------------------------------------------------------------------
-|
-| GET /api/software-directory/{software}/ratings
-|
-| Menampilkan:
-| - average_rating
-| - total_ratings
-| - user_rating
-|
 */
 
 Route::get('/software-directory/{software}/ratings', [
@@ -118,17 +110,9 @@ Route::get('/software-directory/{software}/ratings', [
 | Public Software Comparison
 |--------------------------------------------------------------------------
 |
-| GET /api/software-comparison?software[]=figma&software[]=trello
-|
-| Digunakan untuk membandingkan beberapa software
-| berdasarkan:
-| - Informasi dasar
-| - Kategori
-| - Fitur
-| - Pricing
-| - Integrasi
-| - Rating
-|
+| Example:
+| /api/software-comparison?software[]=figma&software[]=trello
+|--------------------------------------------------------------------------
 */
 
 Route::get('/software-comparison', [
@@ -141,8 +125,9 @@ Route::get('/software-comparison', [
 | Public Software Categories
 |--------------------------------------------------------------------------
 |
+| Endpoint:
 | GET /api/software-categories-public
-|
+|--------------------------------------------------------------------------
 */
 
 Route::get('/software-categories-public', [
@@ -152,7 +137,7 @@ Route::get('/software-categories-public', [
 
 /*
 |--------------------------------------------------------------------------
-| Protected Routes
+| Protected API Routes
 |--------------------------------------------------------------------------
 */
 
@@ -343,16 +328,11 @@ Route::middleware('auth:sanctum')->group(function () {
     |--------------------------------------------------------------------------
     | Software Reviews
     |--------------------------------------------------------------------------
-    |
-    | User yang sudah login dapat:
-    |
-    | POST   /api/software-directory/{software}/reviews
-    | PUT    /api/software-reviews/{softwareReview}
-    | PATCH  /api/software-reviews/{softwareReview}
-    | DELETE /api/software-reviews/{softwareReview}
-    |
-    | User hanya dapat mengubah/menghapus review miliknya sendiri.
-    |
+    */
+
+    /*
+    | Create Review
+    | POST /api/software-directory/{software}/reviews
     */
 
     Route::post('/software-directory/{software}/reviews', [
@@ -360,15 +340,30 @@ Route::middleware('auth:sanctum')->group(function () {
         'store',
     ]);
 
+    /*
+    | Update Review
+    | PUT /api/software-reviews/{softwareReview}
+    */
+
     Route::put('/software-reviews/{softwareReview}', [
         SoftwareReviewController::class,
         'update',
     ]);
 
+    /*
+    | Update Review
+    | PATCH /api/software-reviews/{softwareReview}
+    */
+
     Route::patch('/software-reviews/{softwareReview}', [
         SoftwareReviewController::class,
         'update',
     ]);
+
+    /*
+    | Delete Review
+    | DELETE /api/software-reviews/{softwareReview}
+    */
 
     Route::delete('/software-reviews/{softwareReview}', [
         SoftwareReviewController::class,
@@ -379,25 +374,11 @@ Route::middleware('auth:sanctum')->group(function () {
     |--------------------------------------------------------------------------
     | Software Ratings
     |--------------------------------------------------------------------------
-    |
-    | User yang sudah login dapat:
-    |
-    | POST   /api/software-directory/{software}/ratings
-    | PUT    /api/software-ratings/{softwareRating}
-    | PATCH  /api/software-ratings/{softwareRating}
-    | DELETE /api/software-ratings/{softwareRating}
-    |
-    | User hanya dapat mengubah/menghapus rating miliknya sendiri.
-    |
     */
 
     /*
-    |--------------------------------------------------------------------------
     | Create Rating
-    |--------------------------------------------------------------------------
-    |
     | POST /api/software-directory/{software}/ratings
-    |
     */
 
     Route::post('/software-directory/{software}/ratings', [
@@ -406,12 +387,8 @@ Route::middleware('auth:sanctum')->group(function () {
     ]);
 
     /*
-    |--------------------------------------------------------------------------
     | Update Rating
-    |--------------------------------------------------------------------------
-    |
     | PUT /api/software-ratings/{softwareRating}
-    |
     */
 
     Route::put('/software-ratings/{softwareRating}', [
@@ -420,12 +397,8 @@ Route::middleware('auth:sanctum')->group(function () {
     ]);
 
     /*
-    |--------------------------------------------------------------------------
-    | Update Rating - PATCH
-    |--------------------------------------------------------------------------
-    |
+    | Update Rating
     | PATCH /api/software-ratings/{softwareRating}
-    |
     */
 
     Route::patch('/software-ratings/{softwareRating}', [
@@ -434,12 +407,8 @@ Route::middleware('auth:sanctum')->group(function () {
     ]);
 
     /*
-    |--------------------------------------------------------------------------
     | Delete Rating
-    |--------------------------------------------------------------------------
-    |
     | DELETE /api/software-ratings/{softwareRating}
-    |
     */
 
     Route::delete('/software-ratings/{softwareRating}', [
@@ -480,7 +449,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Software Pricing Management
+    | Software Pricing
     |--------------------------------------------------------------------------
     */
 
@@ -511,7 +480,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Software Integration Management
+    | Software Integrations
     |--------------------------------------------------------------------------
     */
 

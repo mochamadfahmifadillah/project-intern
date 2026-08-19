@@ -18,6 +18,7 @@ function Login() {
 
     setError("");
 
+    // Validasi email
     if (!email.trim()) {
       setError("Email wajib diisi.");
       return;
@@ -28,6 +29,7 @@ function Login() {
       return;
     }
 
+    // Validasi password
     if (!password) {
       setError("Password wajib diisi.");
       return;
@@ -41,19 +43,39 @@ function Login() {
     setLoading(true);
 
     try {
-      await login(email, password);
+      // Login ke backend
+      await login(email.trim(), password);
 
-      navigate("/dashboard");
+      /*
+       * Login berhasil.
+       *
+       * Jangan langsung ke dashboard.
+       * User kembali ke Landing Page.
+       *
+       * Dashboard hanya bisa dibuka melalui:
+       *
+       * Landing
+       *   ↓
+       * Admin
+       *   ↓
+       * /admin
+       *   ↓
+       * /dashboard
+       */
+      navigate("/", { replace: true });
     } catch (error: any) {
       console.error("Login Error:", error);
 
-      setError(error.response?.data?.message || "Email atau password salah.");
+      const message =
+        error?.response?.data?.message || "Email atau password salah.";
 
+      setError(message);
+    } finally {
       setLoading(false);
     }
   };
 
-  // LOADING SCREEN
+  // Loading screen
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
@@ -67,7 +89,9 @@ function Login() {
   return (
     <div
       className="flex min-h-screen items-center justify-center bg-gray-100 bg-cover bg-center p-6"
-      style={{ backgroundImage: "url('/software-empire.webp')" }}
+      style={{
+        backgroundImage: "url('/software-empire.webp')",
+      }}
     >
       {/* MAIN CARD */}
       <div className="grid w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-lg lg:grid-cols-2">
@@ -93,40 +117,65 @@ function Login() {
             <form onSubmit={handleLogin} className="space-y-5">
               {/* EMAIL */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-black">
+                <label
+                  htmlFor="email"
+                  className="mb-2 block text-sm font-medium text-black"
+                >
                   Email
                 </label>
 
                 <input
+                  id="email"
                   type="email"
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+
+                    if (error) {
+                      setError("");
+                    }
+                  }}
                   placeholder="Masukkan Email"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-black outline-none transition focus:border-black"
+                  autoComplete="email"
+                  disabled={loading}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-black outline-none transition focus:border-black disabled:cursor-not-allowed disabled:bg-gray-100"
                   required
                 />
               </div>
 
               {/* PASSWORD */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-black">
+                <label
+                  htmlFor="password"
+                  className="mb-2 block text-sm font-medium text-black"
+                >
                   Password
                 </label>
 
                 <div className="relative">
                   <input
+                    id="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(event) => setPassword(event.target.value)}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+
+                      if (error) {
+                        setError("");
+                      }
+                    }}
                     placeholder="••••••••"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 text-black outline-none transition focus:border-black"
+                    autoComplete="current-password"
+                    disabled={loading}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 text-black outline-none transition focus:border-black disabled:cursor-not-allowed disabled:bg-gray-100"
                     required
                   />
 
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-black"
+                    onClick={() => setShowPassword((value) => !value)}
+                    disabled={loading}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
                     aria-label={
                       showPassword
                         ? "Sembunyikan password"
@@ -144,7 +193,10 @@ function Login() {
 
               {/* ERROR */}
               {error && (
-                <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+                <div
+                  role="alert"
+                  className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600"
+                >
                   {error}
                 </div>
               )}
@@ -155,7 +207,7 @@ function Login() {
                 disabled={loading}
                 className="w-full rounded-lg bg-black px-4 py-3 font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Login
+                {loading ? "Memproses..." : "Login"}
               </button>
             </form>
           </div>
