@@ -16,3 +16,55 @@ body {
   background: #ffffff;
   color: #000000;
 }
+
+.login-loader-large {
+  position: relative;
+  overflow: hidden;
+  height: 80px;
+  width: 80px;
+  border: 1px solid transparent;
+  box-shadow: 0 0 0 2px rgb(25, 116, 253);
+  border-radius: 50%;
+}
+
+.login-waves-large {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgb(30, 146, 255);
+  box-shadow: inset 0 0 50px rgb(0 0 0 / 30%);
+}
+
+.login-waves-large::before,
+.login-waves-large::after {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -75%);
+}
+
+.login-waves-large::before {
+  border-radius: 45%;
+  background: rgb(248, 248, 248);
+  animation: login-wave-large 5s linear infinite;
+}
+
+.login-waves-large::after {
+  border-radius: 40%;
+  background: rgb(255 255 255 / 50%);
+  animation: login-wave-large 10s linear infinite;
+}
+
+@keyframes login-wave-large {
+  0% {
+    transform: translate(-50%, -75%) rotate(0deg);
+  }
+
+  100% {
+    transform: translate(-50%, -75%) rotate(360deg);
+  }
+}

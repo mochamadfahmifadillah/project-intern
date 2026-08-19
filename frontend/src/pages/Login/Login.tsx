@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
+import { Eye, EyeOff, LoaderPinwheel } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { LoaderPinwheel } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 function Login() {
@@ -9,6 +9,7 @@ function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -47,10 +48,21 @@ function Login() {
       console.error("Login Error:", error);
 
       setError(error.response?.data?.message || "Email atau password salah.");
-    } finally {
+
       setLoading(false);
     }
   };
+
+  // LOADING SCREEN
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="login-loader-large">
+          <div className="login-waves-large" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -79,6 +91,7 @@ function Login() {
             </div>
 
             <form onSubmit={handleLogin} className="space-y-5">
+              {/* EMAIL */}
               <div>
                 <label className="mb-2 block text-sm font-medium text-black">
                   Email
@@ -94,19 +107,39 @@ function Login() {
                 />
               </div>
 
+              {/* PASSWORD */}
               <div>
                 <label className="mb-2 block text-sm font-medium text-black">
                   Password
                 </label>
 
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="••••••••"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-black outline-none transition focus:border-black"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="••••••••"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 text-black outline-none transition focus:border-black"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-black"
+                    aria-label={
+                      showPassword
+                        ? "Sembunyikan password"
+                        : "Tampilkan password"
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* ERROR */}
@@ -116,12 +149,13 @@ function Login() {
                 </div>
               )}
 
+              {/* LOGIN BUTTON */}
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full rounded-lg bg-black px-4 py-3 font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {loading ? "Memproses..." : "Login"}
+                Login
               </button>
             </form>
           </div>
