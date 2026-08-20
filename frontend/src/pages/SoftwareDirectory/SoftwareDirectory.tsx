@@ -49,7 +49,6 @@ function SoftwareDirectory() {
         setCategories(response.data);
       } catch (error) {
         console.error("Failed to load categories:", error);
-
         setCategories([]);
       } finally {
         setLoadingCategories(false);
@@ -81,7 +80,6 @@ function SoftwareDirectory() {
         console.error("Failed to load softwares:", error);
 
         setSoftwares([]);
-
         setError("Failed to load software data.");
       } finally {
         setLoadingSoftwares(false);
@@ -215,68 +213,6 @@ function SoftwareDirectory() {
           </section>
         </div>
       </main>
-
-      {/* ================================================================
-          FOOTER
-      ================================================================= */}
-
-      <footer className="bg-white">
-        <div className="mx-auto flex max-w-[1340px] flex-col gap-8 px-6 py-12 md:flex-row md:items-start md:justify-between lg:px-8">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="relative flex h-7 w-7 items-center justify-center">
-                <div className="absolute h-2 w-2 rounded-full bg-[#6846e8]" />
-
-                <div className="absolute h-5 w-1 rounded-full bg-[#6846e8]" />
-
-                <div className="absolute h-1 w-5 rounded-full bg-[#6846e8]" />
-              </div>
-
-              <h2 className="text-[20px] font-bold">Software Empire</h2>
-            </div>
-
-            <p className="mt-5 max-w-[300px] text-[13px] leading-5 text-[#4f4a5b]">
-              © 2024 Software Empire. High-density
-              <br />
-              B2B SaaS Discovery.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-[13px] font-medium">Links</h3>
-
-            <div className="mt-5 space-y-3">
-              <a
-                href="#"
-                className="block text-[14px] underline underline-offset-4"
-              >
-                Product
-              </a>
-
-              <a
-                href="#"
-                className="block text-[14px] underline underline-offset-4"
-              >
-                For Business
-              </a>
-
-              <a
-                href="#"
-                className="block text-[14px] underline underline-offset-4"
-              >
-                Resources
-              </a>
-
-              <a
-                href="#"
-                className="block text-[14px] underline underline-offset-4"
-              >
-                Company
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

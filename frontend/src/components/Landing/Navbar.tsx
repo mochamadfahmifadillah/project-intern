@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
 
 function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -11,7 +11,7 @@ function Navbar() {
 
   const navItems = [
     {
-      label: "Software Directory",
+      label: "Software",
       to: "/software-directory",
     },
     {
@@ -33,8 +33,8 @@ function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#e7e3ef] bg-white/95 backdrop-blur-md">
-      <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-5 sm:px-8">
+    <header className="sticky top-0 z-50 border-b border-[#e8e3ef] bg-white/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-[76px] max-w-[1280px] items-center justify-between px-5 sm:px-8">
         {/* ============================================================
             LOGO
         ============================================================ */}
@@ -42,33 +42,47 @@ function Navbar() {
         <Link
           to="/"
           onClick={closeMobileMenu}
-          className="flex items-center gap-3"
+          className="group flex items-center gap-3"
         >
-          <div className="relative flex h-8 w-8 items-center justify-center">
-            <div className="absolute h-2 w-2 rounded-full bg-[#6846e8]" />
-            <div className="absolute h-5 w-1 rounded-full bg-[#6846e8]" />
-            <div className="absolute h-1 w-5 rounded-full bg-[#6846e8]" />
+          {/* Logo Mark */}
+
+          <div className="relative flex h-9 w-9 items-center justify-center">
+            <div className="absolute h-[7px] w-[7px] rounded-full bg-[#704FE6]" />
+
+            <div className="absolute h-[22px] w-[4px] rounded-full bg-[#704FE6]" />
+
+            <div className="absolute h-[4px] w-[22px] rounded-full bg-[#704FE6]" />
+
+            <div className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-[#FFD361]" />
           </div>
 
-          <span className="text-[20px] font-bold tracking-[-0.5px] text-[#171717] sm:text-[21px]">
-            Software Empire
-          </span>
+          {/* Brand */}
+
+          <div className="leading-none">
+            <span className="block text-[19px] font-bold tracking-[-0.6px] text-[#18161d] sm:text-[20px]">
+              Software Empire
+            </span>
+
+            <span className="mt-1 hidden text-[8px] font-semibold uppercase tracking-[0.18em] text-[#91899d] sm:block">
+              Software Intelligence
+            </span>
+          </div>
         </Link>
 
         {/* ============================================================
             DESKTOP NAVIGATION
         ============================================================ */}
 
-        <nav className="hidden items-center gap-7 lg:flex">
+        <nav className="hidden items-center gap-1 lg:flex">
           {navItems.map((item) => (
             <NavLink
               key={item.label}
               to={item.to}
               className={({ isActive }) =>
-                `relative py-2 text-[13px] font-medium transition ${
+                `relative px-4 py-2.5 text-[13px] font-medium transition ${
                   isActive
-                    ? "text-[#6846e8]"
-                    : "text-[#403b4c] hover:text-[#6846e8]"
+                    ? "text-[#704FE6]"
+                    : "text-[#514b5b] hover:text-[#704FE6]"
                 }`
               }
             >
@@ -77,7 +91,7 @@ function Navbar() {
                   {item.label}
 
                   {isActive && (
-                    <span className="absolute -bottom-[9px] left-0 right-0 h-[2px] rounded-full bg-[#6846e8]" />
+                    <span className="absolute bottom-0 left-4 right-4 h-[2px] rounded-full bg-[#704FE6]" />
                   )}
                 </>
               )}
@@ -89,26 +103,35 @@ function Navbar() {
             RIGHT ACTIONS
         ============================================================ */}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Login */}
+
           <Link
             to="/login"
-            className="hidden px-3 py-2 text-[13px] font-semibold text-[#302b3c] transition hover:text-[#6846e8] sm:block"
+            className="hidden px-3 py-2.5 text-[13px] font-semibold text-[#403a4b] transition hover:text-[#704FE6] sm:block"
           >
             Login
           </Link>
 
+          {/* CTA */}
+
           <Link
             to="/software-directory"
-            className="hidden rounded-lg bg-[#6846e8] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(104,70,232,0.18)] transition hover:-translate-y-0.5 hover:bg-[#5938d5] hover:shadow-[0_8px_20px_rgba(104,70,232,0.25)] sm:block"
+            className="group hidden items-center gap-2 bg-[#704FE6] px-5 py-3 text-[12px] font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#6F4FDE] sm:inline-flex"
           >
             Find Software
+            <ArrowRight
+              size={14}
+              className="transition-transform duration-200 group-hover:translate-x-1"
+            />
           </Link>
 
-          {/* Mobile button */}
+          {/* Mobile Menu */}
+
           <button
             type="button"
             onClick={() => setMobileOpen((value) => !value)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#e2ddea] text-[#302b3c] transition hover:bg-[#f7f5fb] lg:hidden"
+            className="flex h-10 w-10 items-center justify-center border border-[#ddd7e7] bg-white text-[#403a4b] transition hover:border-[#cfc3e4] hover:bg-[#f9f7fc] lg:hidden"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
           >
@@ -126,32 +149,48 @@ function Navbar() {
       ================================================================= */}
 
       {mobileOpen && (
-        <div className="border-t border-[#e7e3ef] bg-white lg:hidden">
-          <div className="mx-auto max-w-[1440px] px-5 py-5 sm:px-8">
-            <nav className="flex flex-col">
-              {navItems.map((item) => (
+        <div className="border-t border-[#e8e3ef] bg-white lg:hidden">
+          <div className="mx-auto max-w-[1280px] px-5 py-5 sm:px-8">
+            {/* Mobile Navigation */}
+
+            <nav className="border border-[#e3ddea] bg-[#faf9fc]">
+              {navItems.map((item, index) => (
                 <NavLink
                   key={item.label}
                   to={item.to}
                   onClick={closeMobileMenu}
                   className={({ isActive }) =>
-                    `border-b border-[#f0edf4] px-1 py-4 text-sm font-medium transition last:border-b-0 ${
+                    `flex items-center justify-between px-5 py-4 text-[13px] font-medium transition ${
+                      index !== navItems.length - 1
+                        ? "border-b border-[#e8e3ef]"
+                        : ""
+                    } ${
                       isActive
-                        ? "text-[#6846e8]"
-                        : "text-[#403b4c] hover:text-[#6846e8]"
+                        ? "bg-[#DEC8FE]/35 text-[#704FE6]"
+                        : "text-[#514b5b] hover:bg-white hover:text-[#704FE6]"
                     }`
                   }
                 >
-                  {item.label}
+                  {({ isActive }) => (
+                    <>
+                      <span>{item.label}</span>
+
+                      {isActive && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#704FE6]" />
+                      )}
+                    </>
+                  )}
                 </NavLink>
               ))}
             </nav>
 
-            <div className="mt-5 grid grid-cols-2 gap-3">
+            {/* Mobile Actions */}
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
               <Link
                 to="/login"
                 onClick={closeMobileMenu}
-                className="flex items-center justify-center rounded-lg border border-[#dcd7e7] px-4 py-3 text-sm font-semibold text-[#302b3c] transition hover:bg-[#f7f5fb]"
+                className="flex items-center justify-center border border-[#d9d2e4] px-4 py-3 text-[13px] font-semibold text-[#403a4b] transition hover:border-[#704FE6] hover:text-[#704FE6]"
               >
                 Login
               </Link>
@@ -159,10 +198,19 @@ function Navbar() {
               <Link
                 to="/software-directory"
                 onClick={closeMobileMenu}
-                className="flex items-center justify-center rounded-lg bg-[#6846e8] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#5938d5]"
+                className="flex items-center justify-center gap-2 bg-[#704FE6] px-4 py-3 text-[13px] font-semibold text-white transition hover:bg-[#6F4FDE]"
               >
                 Find Software
+                <ArrowRight size={14} />
               </Link>
+            </div>
+
+            {/* Small Brand Accent */}
+
+            <div className="mt-5 flex items-center gap-1.5">
+              <span className="h-1 w-12 bg-[#704FE6]" />
+              <span className="h-1 w-6 bg-[#DEC8FE]" />
+              <span className="h-1 w-3 bg-[#FFD361]" />
             </div>
           </div>
         </div>

@@ -28,9 +28,10 @@ function Hero() {
 
         const response = await getPublicSoftwareCategories();
 
-        setCategories(response.data);
+        setCategories(Array.isArray(response?.data) ? response.data : []);
       } catch (error) {
         console.error("Failed to load software categories:", error);
+        setCategories([]);
       } finally {
         setLoadingCategories(false);
       }
@@ -75,7 +76,7 @@ function Hero() {
 
   /*
   |--------------------------------------------------------------------------
-  | CTA
+  | Navigation
   |--------------------------------------------------------------------------
   */
 
@@ -88,98 +89,155 @@ function Hero() {
   };
 
   return (
-    <section
-      className="relative min-h-[800px] overflow-hidden border-b border-[#d9d5e5] bg-cover bg-center"
-      style={{
-        backgroundImage: "url('/background1.webp')",
-      }}
-    >
-      {/* Content */}
-      <div className="relative mx-auto flex min-h-[680px] max-w-[1100px] flex-col items-center px-6 pb-20 pt-24 text-center">
+    <section className="relative isolate overflow-hidden border-b border-[#ddd7e8]">
+      {/* ================================================================= */}
+      {/* BACKGROUND */}
+      {/* ================================================================= */}
+
+      <div className="absolute inset-0 -z-20">
+        <img
+          src="/background1.webp"
+          alt=""
+          aria-hidden="true"
+          className="h-full w-full object-cover object-center"
+        />
+      </div>
+
+      {/* Subtle readability gradient */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white/65 via-white/35 to-white/75" />
+
+      {/* Small brand accent */}
+      <div className="absolute left-0 top-0 h-1 w-full bg-[#704FE6]" />
+
+      {/* ================================================================= */}
+      {/* CONTENT */}
+      {/* ================================================================= */}
+
+      <div className="mx-auto flex min-h-[700px] max-w-[1180px] flex-col items-center justify-center px-6 py-24 text-center lg:px-8">
+        {/* Eyebrow */}
+
+        <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#625b70]">
+          <span className="h-px w-8 bg-[#704FE6]" />
+          Software Intelligence Platform
+          <span className="h-px w-8 bg-[#704FE6]" />
+        </div>
+
         {/* Heading */}
-        <h1 className="max-w-[760px] text-[42px] font-bold leading-[1.15] tracking-[-1.5px] text-[#17151f] md:text-[48px]">
-          Find the Right Software for Your
-          <br />
-          Business
+
+        <h1 className="mt-7 max-w-[850px] text-[46px] font-bold leading-[1.04] tracking-[-2.2px] text-[#17151d] sm:text-[54px] md:text-[62px] lg:text-[68px]">
+          Find software that
+          <span className="block text-[#704FE6]">
+            moves your business forward.
+          </span>
         </h1>
 
         {/* Description */}
-        <p className="mt-6 max-w-[650px] text-[16px] leading-7 text-[#454257]">
-          Discover, compare, and evaluate business software based on your needs,
-          <br className="hidden md:block" />
+
+        <p className="mt-6 max-w-[620px] text-[15px] leading-7 text-[#5d5768] md:text-[16px]">
+          Discover, evaluate, and compare business software based on your needs,
           budget, industry, and integrations.
         </p>
 
-        {/* Search */}
-        <div className="mt-11 flex w-full max-w-[685px] flex-col border border-[#ddd9e5] bg-white shadow-[0_12px_40px_rgba(30,20,70,0.10)] md:h-[58px] md:flex-row">
-          {/* Category */}
-          <div className="relative flex h-[56px] items-center border-b border-[#ddd9e5] px-5 md:w-[190px] md:border-b-0 md:border-r">
-            <select
-              value={category}
-              onChange={(event) => setCategory(event.target.value)}
-              disabled={loadingCategories}
-              className="w-full cursor-pointer appearance-none bg-transparent pr-6 text-left text-[14px] text-[#3d394a] outline-none disabled:cursor-wait disabled:text-[#817c91]"
-            >
-              <option value="">
-                {loadingCategories ? "Loading..." : "All Categories"}
-              </option>
+        {/* ================================================================= */}
+        {/* SEARCH */}
+        {/* ================================================================= */}
 
-              {categories.map((item) => (
-                <option key={item.id} value={item.slug}>
-                  {item.name}
+        <div className="mt-10 w-full max-w-[780px]">
+          <div className="flex flex-col rounded-[2px] border border-[#d7d0e1] bg-white p-2 shadow-[0_20px_55px_rgba(42,30,75,0.14)] md:h-[68px] md:flex-row">
+            {/* Category */}
+
+            <div className="relative flex h-[52px] items-center border-b border-[#ebe7f0] px-4 md:h-full md:w-[190px] md:border-b-0 md:border-r">
+              <select
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+                disabled={loadingCategories}
+                className="w-full cursor-pointer appearance-none bg-transparent pr-7 text-left text-[13px] font-medium text-[#35303f] outline-none disabled:cursor-wait"
+              >
+                <option value="">
+                  {loadingCategories ? "Loading..." : "All Categories"}
                 </option>
-              ))}
-            </select>
 
-            <ChevronDown
-              size={17}
-              className="pointer-events-none absolute right-4 text-[#555064]"
-            />
+                {categories.map((item) => (
+                  <option key={item.id} value={item.slug}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+
+              <ChevronDown
+                size={16}
+                strokeWidth={1.8}
+                className="pointer-events-none absolute right-4 text-[#777080]"
+              />
+            </div>
+
+            {/* Search Input */}
+
+            <div className="flex h-[52px] flex-1 items-center px-4 md:h-full">
+              <Search
+                size={20}
+                strokeWidth={1.8}
+                className="mr-3 shrink-0 text-[#704FE6]"
+              />
+
+              <input
+                type="text"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
+                placeholder="Search software, tools, or solutions..."
+                className="w-full bg-transparent text-[14px] text-[#201d27] outline-none placeholder:text-[#9791a0]"
+              />
+            </div>
+
+            {/* Search */}
+
+            <button
+              type="button"
+              onClick={handleSearch}
+              className="group flex h-[48px] items-center justify-center gap-2 bg-[#704FE6] px-8 text-[13px] font-bold text-white transition hover:bg-[#6F4FDE] md:h-[52px]"
+            >
+              Search
+              <ArrowRight
+                size={15}
+                className="transition-transform duration-200 group-hover:translate-x-1"
+              />
+            </button>
           </div>
 
-          {/* Search Input */}
-          <div className="flex h-[56px] flex-1 items-center px-4">
-            <Search
-              size={21}
-              strokeWidth={1.8}
-              className="mr-3 shrink-0 text-[#716b82]"
-            />
+          {/* Search hint */}
 
-            <input
-              type="text"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  handleSearch();
-                }
-              }}
-              placeholder="What software are you looking for?"
-              className="w-full bg-transparent text-[14px] text-[#222] outline-none placeholder:text-[#817c91]"
-            />
+          <div className="mt-3 flex justify-between px-1 text-[10px] text-[#817a8d]">
+            <span>Search by name, category, or business need</span>
+
+            <span className="hidden sm:block">Press Enter to search</span>
           </div>
-
-          {/* Search Button */}
-          <button
-            type="button"
-            onClick={handleSearch}
-            className="m-2 h-[40px] bg-[#6846e8] px-7 text-[13px] font-semibold text-white transition hover:bg-[#5938d5]"
-          >
-            Search
-          </button>
         </div>
 
-        {/* Popular Categories */}
-        {!loadingCategories && categories.length > 0 && (
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-2 text-[13px]">
-            <span className="mr-1 font-semibold text-[#302c3b]">Popular:</span>
+        {/* ================================================================= */}
+        {/* POPULAR */}
+        {/* ================================================================= */}
 
-            {categories.slice(0, 6).map((item) => (
+        {!loadingCategories && categories.length > 0 && (
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#817a8d]">
+              Popular
+            </span>
+
+            {categories.slice(0, 6).map((item, index) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => handleCategoryClick(item.slug)}
-                className="text-[#403b4c] underline decoration-[#aaa4b7] underline-offset-4 transition hover:text-[#6846e8]"
+                className={`text-[12px] font-medium underline decoration-transparent underline-offset-4 transition hover:decoration-current ${
+                  index === 0
+                    ? "text-[#704FE6]"
+                    : "text-[#514b5b] hover:text-[#704FE6]"
+                }`}
               >
                 {item.name}
               </button>
@@ -187,27 +245,50 @@ function Hero() {
           </div>
         )}
 
+        {/* ================================================================= */}
         {/* CTA */}
-        <div className="mt-11 flex flex-col gap-3 sm:flex-row">
+        {/* ================================================================= */}
+
+        <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
           <button
             type="button"
             onClick={handleExplore}
-            className="group flex items-center justify-center gap-2 bg-[#6846e8] px-8 py-3 text-[13px] font-semibold tracking-wide text-white transition hover:bg-[#5938d5]"
+            className="group inline-flex min-w-[175px] items-center justify-center gap-2 bg-[#704FE6] px-7 py-3.5 text-[13px] font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#6F4FDE]"
           >
             Explore Software
             <ArrowRight
               size={15}
-              className="transition-transform group-hover:translate-x-1"
+              className="transition-transform duration-200 group-hover:translate-x-1"
             />
           </button>
 
           <button
             type="button"
             onClick={handleCompare}
-            className="border border-[#d0cbd9] bg-white px-8 py-3 text-[13px] font-semibold tracking-wide text-[#171717] transition hover:bg-[#f8f7fa]"
+            className="min-w-[175px] border border-[#cbc3d8] bg-white px-7 py-3.5 text-[13px] font-semibold text-[#302b3b] transition hover:border-[#704FE6] hover:text-[#704FE6]"
           >
             Compare Software
           </button>
+        </div>
+
+        {/* ================================================================= */}
+        {/* JOURNEY */}
+        {/* ================================================================= */}
+
+        <div className="mt-12 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8b8495]">
+          <span>Discover</span>
+
+          <span className="h-1 w-1 rounded-full bg-[#DEC8FE]" />
+
+          <span>Evaluate</span>
+
+          <span className="h-1 w-1 rounded-full bg-[#FFD361]" />
+
+          <span>Compare</span>
+
+          <span className="h-1 w-1 rounded-full bg-[#704FE6]" />
+
+          <span>Decide</span>
         </div>
       </div>
     </section>
