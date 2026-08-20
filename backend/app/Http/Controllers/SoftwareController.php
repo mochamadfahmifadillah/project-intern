@@ -13,7 +13,12 @@ class SoftwareController extends Controller
      */
     public function index()
     {
-        $softwares = Software::with('category')
+        $softwares = Software::with([
+            'category',
+            'pricings',
+            'ratings',
+            'reviews',
+        ])
             ->latest()
             ->get();
 
@@ -34,31 +39,37 @@ class SoftwareController extends Controller
                 'integer',
                 'exists:software_categories,id',
             ],
+
             'name' => [
                 'required',
                 'string',
                 'max:255',
             ],
+
             'slug' => [
                 'nullable',
                 'string',
                 'max:255',
                 'unique:softwares,slug',
             ],
+
             'description' => [
                 'nullable',
                 'string',
             ],
+
             'website_url' => [
                 'nullable',
                 'url',
                 'max:255',
             ],
+
             'logo' => [
                 'nullable',
                 'string',
                 'max:255',
             ],
+
             'status' => [
                 'nullable',
                 'in:active,inactive',
@@ -108,7 +119,12 @@ class SoftwareController extends Controller
 
         $software = Software::create($validated);
 
-        $software->load('category');
+        $software->load([
+            'category',
+            'pricings',
+            'ratings',
+            'reviews',
+        ]);
 
         return response()->json([
             'message' => 'Software berhasil dibuat.',
@@ -121,7 +137,14 @@ class SoftwareController extends Controller
      */
     public function show(Software $software)
     {
-        $software->load('category');
+        $software->load([
+            'category',
+            'features',
+            'pricings',
+            'integrations',
+            'ratings',
+            'reviews',
+        ]);
 
         return response()->json([
             'message' => 'Detail software berhasil diambil.',
@@ -140,31 +163,37 @@ class SoftwareController extends Controller
                 'integer',
                 'exists:software_categories,id',
             ],
+
             'name' => [
                 'required',
                 'string',
                 'max:255',
             ],
+
             'slug' => [
                 'nullable',
                 'string',
                 'max:255',
                 'unique:softwares,slug,' . $software->id,
             ],
+
             'description' => [
                 'nullable',
                 'string',
             ],
+
             'website_url' => [
                 'nullable',
                 'url',
                 'max:255',
             ],
+
             'logo' => [
                 'nullable',
                 'string',
                 'max:255',
             ],
+
             'status' => [
                 'nullable',
                 'in:active,inactive',
@@ -183,17 +212,45 @@ class SoftwareController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | Check Duplicate Slug
+        |--------------------------------------------------------------------------
+        */
+
+        $slugExists = Software::where('slug', $validated['slug'])
+            ->where('id', '!=', $software->id)
+            ->exists();
+
+        if ($slugExists) {
+            return response()->json([
+                'message' => 'Slug software sudah digunakan.',
+                'errors' => [
+                    'slug' => [
+                        'Slug software sudah digunakan.',
+                    ],
+                ],
+            ], 422);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
         | Update Software
         |--------------------------------------------------------------------------
         */
 
         $software->update($validated);
 
-        $software->load('category');
+        $software->load([
+            'category',
+            'features',
+            'pricings',
+            'integrations',
+            'ratings',
+            'reviews',
+        ]);
 
         return response()->json([
             'message' => 'Software berhasil diperbarui.',
-            'data' => $software->fresh('category'),
+            'data' => $software,
         ]);
     }
 
@@ -217,6 +274,15 @@ class SoftwareController extends Controller
      * - search by software description
      * - search by category name
      * - filter by category slug
+     * - filter by pricing type
+     *
+     * Examples:
+     *
+     * GET /api/software-directory
+     * GET /api/software-directory?search=figma
+     * GET /api/software-directory?category=design
+     * GET /api/software-directory?pricing=free
+     * GET /api/software-directory?category=design&pricing=paid
      */
     public function publicIndex(Request $request)
     {
@@ -226,7 +292,12 @@ class SoftwareController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $query = Software::with('category')
+        $query = Software::with([
+            'category',
+            'pricings',
+            'ratings',
+            'reviews',
+        ])
             ->where('status', 'active');
 
         /*
@@ -262,6 +333,28 @@ class SoftwareController extends Controller
 
             $query->whereHas('category', function ($categoryQuery) use ($category) {
                 $categoryQuery->where('slug', $category);
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pricing Model Filter
+        |--------------------------------------------------------------------------
+        |
+        | Available pricing types:
+        |
+        | - free
+        | - freemium
+        | - paid
+        | - custom
+        |
+        */
+
+        if ($request->filled('pricing')) {
+            $pricing = trim($request->pricing);
+
+            $query->whereHas('pricings', function ($pricingQuery) use ($pricing) {
+                $pricingQuery->where('pricing_type', $pricing);
             });
         }
 
@@ -305,6 +398,8 @@ class SoftwareController extends Controller
             'features',
             'pricings',
             'integrations',
+            'ratings',
+            'reviews',
         ])
             ->where('status', 'active')
             ->where('slug', $slug)

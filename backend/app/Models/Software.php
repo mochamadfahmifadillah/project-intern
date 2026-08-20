@@ -75,14 +75,23 @@ class Software extends Model
         );
     }
 
+    /**
+     * Software Reviews
+     */
     public function reviews(): HasMany
-{
-    return $this->hasMany(SoftwareReview::class);
-}
+    {
+        return $this->hasMany(
+            SoftwareReview::class
+        );
+    }
 
-public function ratings(): HasMany
-{
-    return $this->hasMany(SoftwareRating::class);
-}
-
+    /**
+     * Software Ratings
+     */
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(
+            SoftwareRating::class
+        );
+    }
 }
