@@ -7,6 +7,7 @@ const steps = [
     title: "Discover",
     description:
       "Find software based on your business needs, industry, and category.",
+    image: "/background2.webp",
   },
   {
     number: "02",
@@ -14,6 +15,7 @@ const steps = [
     title: "Evaluate",
     description:
       "Explore features, pricing, integrations, ratings, and user reviews.",
+    image: "/background3.webp",
   },
   {
     number: "03",
@@ -21,6 +23,7 @@ const steps = [
     title: "Compare",
     description:
       "Compare multiple software options side by side before deciding.",
+    image: "/background4.webp",
   },
   {
     number: "04",
@@ -28,54 +31,77 @@ const steps = [
     title: "Decide",
     description:
       "Choose the software that best fits your business requirements.",
+    image: "/background5.webp",
   },
 ];
 
 function HowItWorks() {
   return (
-    <section className="border-b border-[#d9d5e5] bg-[#faf9fc] py-20">
-      <div className="mx-auto max-w-[1100px] px-6">
-        <div className="max-w-[600px]">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#6846e8]">
+    <section className="border-b border-[#d9d5e5] bg-[#faf9fc] py-32">
+      <div className="mx-auto max-w-[1280px] px-6 lg:px-8">
+        {/* Header */}
+        <div className="max-w-[700px]">
+          <p className="text-[13px] font-semibold uppercase tracking-[0.18em] text-[#6846e8]">
             How it works
           </p>
 
-          <h2 className="mt-3 text-[32px] font-semibold tracking-[-1px]">
+          <h2 className="mt-4 text-[38px] font-semibold leading-tight tracking-[-1.2px] md:text-[44px]">
             Make better software decisions.
           </h2>
 
-          <p className="mt-4 text-[15px] leading-7 text-[#5b5667]">
+          <p className="mt-5 max-w-[620px] text-[16px] leading-7 text-[#5b5667]">
             Software Empire helps you discover, evaluate, compare, and choose
             software with confidence.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-4">
+        {/* Cards */}
+        <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {steps.map((step) => {
             const Icon = step.icon;
 
             return (
               <div
                 key={step.number}
-                className="border border-[#ddd9e5] bg-white p-6"
+                className="group relative min-h-[380px] overflow-hidden border border-[#d9d4e3] bg-white transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(30,20,70,0.15)]"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center bg-[#eeeaff] text-[#6846e8]">
-                    <Icon size={19} />
+                {/* Background Image */}
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                  style={{
+                    backgroundImage: `url('${step.image}')`,
+                  }}
+                />
+
+                {/* Dark Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/5" />
+
+                {/* Content */}
+                <div className="relative z-10 flex min-h-[380px] flex-col p-8 text-white">
+                  {/* Top */}
+                  <div className="flex items-start justify-between">
+                    {/* Icon */}
+                    <div className="flex h-14 w-14 items-center justify-center bg-white text-[#6846e8] shadow-lg">
+                      <Icon size={24} strokeWidth={1.8} />
+                    </div>
+
+                    {/* Number */}
+                    <span className="text-[14px] font-semibold tracking-wide text-white/80">
+                      {step.number}
+                    </span>
                   </div>
 
-                  <span className="text-[12px] font-semibold text-[#aaa5b3]">
-                    {step.number}
-                  </span>
+                  {/* Bottom */}
+                  <div className="mt-auto">
+                    <h3 className="text-[25px] font-semibold tracking-[-0.5px]">
+                      {step.title}
+                    </h3>
+
+                    <p className="mt-4 max-w-[250px] text-[15px] leading-7 text-white/85">
+                      {step.description}
+                    </p>
+                  </div>
                 </div>
-
-                <h3 className="mt-6 text-[17px] font-semibold">
-                  {step.title}
-                </h3>
-
-                <p className="mt-3 text-[13px] leading-6 text-[#5b5667]">
-                  {step.description}
-                </p>
               </div>
             );
           })}
