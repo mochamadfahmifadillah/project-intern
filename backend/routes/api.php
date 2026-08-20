@@ -60,11 +60,13 @@ Route::post('/login', [
 |--------------------------------------------------------------------------
 | GET /api/software-directory
 |--------------------------------------------------------------------------
+|
 | Optional query:
+|
 | ?search=figma
 | ?category=design
 | ?search=figma&category=design
-|--------------------------------------------------------------------------
+|
 */
 
 Route::get('/software-directory', [
@@ -76,6 +78,11 @@ Route::get('/software-directory', [
 |--------------------------------------------------------------------------
 | GET /api/software-directory/{slug}
 |--------------------------------------------------------------------------
+|
+| Contoh:
+|
+| /api/software-directory/figma
+|
 */
 
 Route::get('/software-directory/{slug}', [
@@ -87,9 +94,14 @@ Route::get('/software-directory/{slug}', [
 |--------------------------------------------------------------------------
 | Public Software Reviews
 |--------------------------------------------------------------------------
+|
+| GET /api/software-directory/{software}/reviews
+|
+| {software:slug} memastikan parameter menggunakan slug.
+|
 */
 
-Route::get('/software-directory/{software}/reviews', [
+Route::get('/software-directory/{software:slug}/reviews', [
     SoftwareReviewController::class,
     'index',
 ]);
@@ -98,9 +110,14 @@ Route::get('/software-directory/{software}/reviews', [
 |--------------------------------------------------------------------------
 | Public Software Ratings
 |--------------------------------------------------------------------------
+|
+| GET /api/software-directory/{software}/ratings
+|
+| {software:slug} memastikan parameter menggunakan slug.
+|
 */
 
-Route::get('/software-directory/{software}/ratings', [
+Route::get('/software-directory/{software:slug}/ratings', [
     SoftwareRatingController::class,
     'index',
 ]);
@@ -111,8 +128,9 @@ Route::get('/software-directory/{software}/ratings', [
 |--------------------------------------------------------------------------
 |
 | Example:
+|
 | /api/software-comparison?software[]=figma&software[]=trello
-|--------------------------------------------------------------------------
+|
 */
 
 Route::get('/software-comparison', [
@@ -125,9 +143,8 @@ Route::get('/software-comparison', [
 | Public Software Categories
 |--------------------------------------------------------------------------
 |
-| Endpoint:
 | GET /api/software-categories-public
-|--------------------------------------------------------------------------
+|
 */
 
 Route::get('/software-categories-public', [
@@ -333,9 +350,12 @@ Route::middleware('auth:sanctum')->group(function () {
     /*
     | Create Review
     | POST /api/software-directory/{software}/reviews
+    |
+    | Menggunakan slug untuk menemukan software.
+    |
     */
 
-    Route::post('/software-directory/{software}/reviews', [
+    Route::post('/software-directory/{software:slug}/reviews', [
         SoftwareReviewController::class,
         'store',
     ]);
@@ -379,9 +399,12 @@ Route::middleware('auth:sanctum')->group(function () {
     /*
     | Create Rating
     | POST /api/software-directory/{software}/ratings
+    |
+    | Menggunakan slug untuk menemukan software.
+    |
     */
 
-    Route::post('/software-directory/{software}/ratings', [
+    Route::post('/software-directory/{software:slug}/ratings', [
         SoftwareRatingController::class,
         'store',
     ]);

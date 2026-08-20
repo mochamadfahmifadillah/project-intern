@@ -38,11 +38,23 @@ class SoftwareReviewController extends Controller
         Request $request,
         Software $software
     ) {
+        /*
+        |--------------------------------------------------------------------------
+        | Check Software Status
+        |--------------------------------------------------------------------------
+        */
+
         if ($software->status !== 'active') {
             return response()->json([
                 'message' => 'Software tidak ditemukan.',
             ], 404);
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Request
+        |--------------------------------------------------------------------------
+        */
 
         $validated = $request->validate([
             'review' => [
@@ -57,6 +69,11 @@ class SoftwareReviewController extends Controller
         |--------------------------------------------------------------------------
         | Check Existing Review
         |--------------------------------------------------------------------------
+        |
+        | Database juga memiliki UNIQUE (software_id, user_id),
+        | sehingga satu user hanya boleh memiliki satu review
+        | untuk satu software.
+        |
         */
 
         $existingReview = SoftwareReview::where(
@@ -88,6 +105,12 @@ class SoftwareReviewController extends Controller
             'status' => 'active',
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Load User
+        |--------------------------------------------------------------------------
+        */
+
         $review->load('user:id,name');
 
         return response()->json([
@@ -117,6 +140,12 @@ class SoftwareReviewController extends Controller
             ], 403);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Request
+        |--------------------------------------------------------------------------
+        */
+
         $validated = $request->validate([
             'review' => [
                 'required',
@@ -125,6 +154,12 @@ class SoftwareReviewController extends Controller
                 'max:2000',
             ],
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Review
+        |--------------------------------------------------------------------------
+        */
 
         $softwareReview->update([
             'review' => $validated['review'],
@@ -158,6 +193,12 @@ class SoftwareReviewController extends Controller
                 'message' => 'Anda tidak memiliki akses untuk menghapus review ini.',
             ], 403);
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete Review
+        |--------------------------------------------------------------------------
+        */
 
         $softwareReview->delete();
 

@@ -23,18 +23,26 @@ import {
   getPublicSoftwareReviews,
   updateSoftwareRating,
   type Software,
-  type SoftwareRating,
+  type SoftwareRatingSummary,
   type SoftwareReview,
 } from "../../services/softwareService";
 
 function SoftwareDetail() {
   const { slug } = useParams<{ slug: string }>();
 
+  /*
+  |--------------------------------------------------------------------------
+  | State
+  |--------------------------------------------------------------------------
+  */
+
   const [software, setSoftware] = useState<Software | null>(null);
   const [reviews, setReviews] = useState<SoftwareReview[]>([]);
-  const [ratings, setRatings] = useState<SoftwareRating[]>([]);
+  const [ratingSummary, setRatingSummary] =
+    useState<SoftwareRatingSummary | null>(null);
 
   const [reviewText, setReviewText] = useState("");
+
   const [selectedRating, setSelectedRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
 
@@ -50,8 +58,32 @@ function SoftwareDetail() {
   const [error, setError] = useState("");
   const [reviewError, setReviewError] = useState("");
   const [reviewSuccess, setReviewSuccess] = useState("");
+
   const [ratingError, setRatingError] = useState("");
   const [ratingSuccess, setRatingSuccess] = useState("");
+
+  /*
+  |--------------------------------------------------------------------------
+  | Current User
+  |--------------------------------------------------------------------------
+  */
+
+  const currentUserId = useMemo(() => {
+    const storedUser = localStorage.getItem("user");
+
+    if (!storedUser) {
+      return null;
+    }
+
+    try {
+      const currentUser = JSON.parse(storedUser);
+      const id = Number(currentUser?.id);
+
+      return Number.isFinite(id) && id > 0 ? id : null;
+    } catch {
+      return null;
+    }
+  }, []);
 
   /*
   |--------------------------------------------------------------------------
@@ -75,6 +107,7 @@ function SoftwareDetail() {
       setSoftware(response.data);
     } catch (error) {
       console.error("Gagal mengambil detail software:", error);
+
       setSoftware(null);
       setError("Software tidak ditemukan.");
     } finally {
@@ -100,7 +133,7 @@ function SoftwareDetail() {
 
       const response = await getPublicSoftwareReviews(slug);
 
-      setReviews(response?.data ?? []);
+      setReviews(Array.isArray(response?.data) ? response.data : []);
     } catch (error) {
       console.error("Gagal mengambil review:", error);
 
@@ -113,10 +146,11 @@ function SoftwareDetail() {
 
   /*
   |--------------------------------------------------------------------------
-  | Fetch Ratings
+  | Fetch Rating Summary
   |--------------------------------------------------------------------------
   */
-  const fetchRatings = async () => {
+
+  const fetchRating = async () => {
     if (!slug) {
       setLoadingRatings(false);
       return;
@@ -128,36 +162,29 @@ function SoftwareDetail() {
 
       const response = await getPublicSoftwareRating(slug);
 
-      const ratingData = Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response?.data?.data)
-          ? response.data.data
-          : [];
+      const data = response?.data;
 
-      setRatings(ratingData);
+      if (!data) {
+        setRatingSummary({
+          average_rating: 0,
+          total_ratings: 0,
+          user_rating: null,
+          user_rating_id: null,
+        });
 
-      const storedUser = localStorage.getItem("user");
-
-      if (storedUser) {
-        try {
-          const currentUser = JSON.parse(storedUser);
-          const currentUserId = Number(currentUser?.id);
-
-          const userRating = ratingData.find(
-            (rating) => Number(rating.user_id) === currentUserId,
-          );
-
-          setSelectedRating(userRating?.rating ?? 0);
-        } catch {
-          setSelectedRating(0);
-        }
-      } else {
         setSelectedRating(0);
+        return;
       }
+
+      setRatingSummary(data);
+
+      setSelectedRating(
+        data.user_rating !== null ? Number(data.user_rating) : 0,
+      );
     } catch (error) {
       console.error("Gagal mengambil rating:", error);
 
-      setRatings([]);
+      setRatingSummary(null);
       setSelectedRating(0);
       setRatingError("Gagal mengambil rating software.");
     } finally {
@@ -174,85 +201,28 @@ function SoftwareDetail() {
   useEffect(() => {
     fetchSoftwareDetail();
     fetchReviews();
-    fetchRatings();
+    fetchRating();
   }, [slug]);
 
   /*
   |--------------------------------------------------------------------------
-  | Rating Calculation
+  | Rating Stats
   |--------------------------------------------------------------------------
   */
 
   const ratingStats = useMemo(() => {
-    const total = ratings.length;
-
-    if (!total) {
+    if (!ratingSummary) {
       return {
         average: 0,
         total: 0,
-        percentage: 0,
       };
     }
-
-    const totalScore = ratings.reduce(
-      (sum, item) => sum + Number(item.rating),
-      0,
-    );
-
-    const average = totalScore / total;
 
     return {
-      average,
-      total,
-      percentage: (average / 5) * 100,
+      average: Number(ratingSummary.average_rating) || 0,
+      total: Number(ratingSummary.total_ratings) || 0,
     };
-  }, [ratings]);
-
-  /*
-  |--------------------------------------------------------------------------
-  | Rating Distribution
-  |--------------------------------------------------------------------------
-  */
-
-  const ratingDistribution = useMemo(() => {
-    return [5, 4, 3, 2, 1].map((star) => {
-      const count = ratings.filter(
-        (item) => Number(item.rating) === star,
-      ).length;
-
-      const percentage =
-        ratingStats.total > 0 ? (count / ratingStats.total) * 100 : 0;
-
-      return {
-        star,
-        count,
-        percentage,
-      };
-    });
-  }, [ratings, ratingStats.total]);
-
-  /*
-  |--------------------------------------------------------------------------
-  | Current User Rating
-  |--------------------------------------------------------------------------
-  */
-
-  const getCurrentUserRating = (): SoftwareRating | null => {
-    const storedUser = localStorage.getItem("user");
-
-    if (!storedUser) {
-      return null;
-    }
-
-    try {
-      const currentUser = JSON.parse(storedUser);
-      const currentUserId = Number(currentUser?.id);
-
-      return ratings.find((rating) => rating.user_id === currentUserId) ?? null;
-    } catch {
-      return null;
-    }
-  };
+  }, [ratingSummary]);
 
   /*
   |--------------------------------------------------------------------------
@@ -270,15 +240,23 @@ function SoftwareDetail() {
       setRatingError("");
       setRatingSuccess("");
 
-      const existingRating = getCurrentUserRating();
+      const userRatingId = ratingSummary?.user_rating_id ?? null;
 
-      if (existingRating) {
-        await updateSoftwareRating(existingRating.id, {
+      /*
+       * Jika user sudah memiliki rating dan backend memberikan
+       * ID rating tersebut, update rating.
+       */
+      if (userRatingId) {
+        await updateSoftwareRating(userRatingId, {
           rating: ratingValue,
         });
 
         setRatingSuccess("Rating berhasil diperbarui.");
       } else {
+        /*
+         * Jika belum pernah memberikan rating,
+         * buat rating baru.
+         */
         await createSoftwareRating(slug, {
           rating: ratingValue,
         });
@@ -288,19 +266,30 @@ function SoftwareDetail() {
 
       setSelectedRating(ratingValue);
 
-      await fetchRatings();
-    } catch (error: any) {
+      await fetchRating();
+    } catch (error: unknown) {
       console.error("Gagal menyimpan rating:", error);
 
-      const status = error?.response?.status;
+      const responseError = error as {
+        response?: {
+          status?: number;
+          data?: {
+            message?: string;
+          };
+        };
+      };
+
+      const status = responseError.response?.status;
 
       setRatingError(
-        error?.response?.data?.message ||
+        responseError.response?.data?.message ||
           (status === 401
             ? "Silakan login terlebih dahulu untuk memberikan rating."
             : status === 403
               ? "Anda tidak memiliki akses untuk mengubah rating ini."
-              : "Gagal menyimpan rating."),
+              : status === 409
+                ? "Anda sudah memberikan rating untuk software ini."
+                : "Gagal menyimpan rating."),
       );
     } finally {
       setSubmittingRating(false);
@@ -343,16 +332,27 @@ function SoftwareDetail() {
       setReviewSuccess("Review berhasil ditambahkan.");
 
       await fetchReviews();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Gagal menambahkan review:", error);
 
-      const status = error?.response?.status;
+      const responseError = error as {
+        response?: {
+          status?: number;
+          data?: {
+            message?: string;
+          };
+        };
+      };
+
+      const status = responseError.response?.status;
 
       setReviewError(
-        error?.response?.data?.message ||
+        responseError.response?.data?.message ||
           (status === 401
             ? "Silakan login terlebih dahulu untuk memberikan review."
-            : "Gagal menambahkan review."),
+            : status === 403
+              ? "Anda tidak memiliki akses untuk memberikan review."
+              : "Gagal menambahkan review."),
       );
     } finally {
       setSubmittingReview(false);
@@ -386,13 +386,22 @@ function SoftwareDetail() {
       );
 
       setReviewSuccess("Review berhasil dihapus.");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Gagal menghapus review:", error);
 
-      const status = error?.response?.status;
+      const responseError = error as {
+        response?: {
+          status?: number;
+          data?: {
+            message?: string;
+          };
+        };
+      };
+
+      const status = responseError.response?.status;
 
       setReviewError(
-        error?.response?.data?.message ||
+        responseError.response?.data?.message ||
           (status === 401
             ? "Silakan login terlebih dahulu."
             : status === 403
@@ -416,9 +425,11 @@ function SoftwareDetail() {
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="animate-pulse space-y-6">
             <div className="h-5 w-40 rounded bg-slate-200" />
+
             <div className="rounded-[2rem] bg-white p-8">
               <div className="flex gap-6">
                 <div className="h-24 w-24 rounded-2xl bg-slate-200" />
+
                 <div className="flex-1 space-y-4">
                   <div className="h-8 w-72 rounded bg-slate-200" />
                   <div className="h-4 w-full max-w-2xl rounded bg-slate-200" />
@@ -471,10 +482,16 @@ function SoftwareDetail() {
     );
   }
 
+  /*
+  |--------------------------------------------------------------------------
+  | Render
+  |--------------------------------------------------------------------------
+  */
+
   return (
     <div className="min-h-screen bg-[var(--off-white)]">
       {/* ================================================================
-          HERO / SOFTWARE HEADER
+          HERO
       ================================================================= */}
 
       <section className="relative overflow-hidden bg-[var(--primary-dark)]">
@@ -483,8 +500,6 @@ function SoftwareDetail() {
         <div className="pointer-events-none absolute -bottom-40 right-0 h-96 w-96 rounded-full bg-[var(--accent-yellow)] opacity-10 blur-[120px]" />
 
         <div className="relative mx-auto max-w-7xl px-4 pb-14 pt-8 sm:px-6 lg:px-8 lg:pb-20">
-          {/* Breadcrumb */}
-
           <Link
             to="/software-directory"
             className="inline-flex items-center gap-2 text-sm font-medium text-white/60 transition hover:text-white"
@@ -493,13 +508,9 @@ function SoftwareDetail() {
             Software Directory
           </Link>
 
-          {/* Main Header */}
-
           <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-                {/* Logo */}
-
                 <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[1.5rem] border border-white/10 bg-white shadow-xl">
                   {software.logo ? (
                     <img
@@ -515,8 +526,6 @@ function SoftwareDetail() {
                 </div>
 
                 <div>
-                  {/* Category */}
-
                   {software.category && (
                     <span className="inline-flex rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-[var(--lavender)] ring-1 ring-inset ring-white/10">
                       {software.category.name}
@@ -540,8 +549,6 @@ function SoftwareDetail() {
                     {software.description ||
                       "Temukan informasi lengkap mengenai software ini."}
                   </p>
-
-                  {/* Rating */}
 
                   <div className="mt-6 flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-1">
@@ -585,8 +592,6 @@ function SoftwareDetail() {
               </div>
             </div>
 
-            {/* CTA */}
-
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
               {software.website_url && (
                 <a
@@ -613,13 +618,11 @@ function SoftwareDetail() {
       </section>
 
       {/* ================================================================
-          MAIN CONTENT
+          MAIN
       ================================================================= */}
 
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-        {/* ==============================================================
-            QUICK INFO
-        ============================================================== */}
+        {/* QUICK INFO */}
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -681,9 +684,7 @@ function SoftwareDetail() {
           </div>
         </div>
 
-        {/* ==============================================================
-            OVERVIEW + INFORMATION
-        ============================================================== */}
+        {/* OVERVIEW */}
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
           <section className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
@@ -723,7 +724,14 @@ function SoftwareDetail() {
                 </p>
 
                 <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-slate-900">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      software.status === "active"
+                        ? "bg-emerald-500"
+                        : "bg-slate-400"
+                    }`}
+                  />
+
                   {software.status === "active" ? "Active" : "Inactive"}
                 </div>
               </div>
@@ -761,9 +769,7 @@ function SoftwareDetail() {
           </section>
         </div>
 
-        {/* ==============================================================
-            FEATURES
-        ============================================================== */}
+        {/* FEATURES */}
 
         <section className="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
@@ -820,9 +826,7 @@ function SoftwareDetail() {
           )}
         </section>
 
-        {/* ==============================================================
-            PRICING
-        ============================================================== */}
+        {/* PRICING */}
 
         <section className="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
@@ -870,6 +874,7 @@ function SoftwareDetail() {
 
                   {pricing.price !== undefined && pricing.price !== null && (
                     <p className="mt-5 text-2xl font-black text-slate-900">
+                      {pricing.currency ? `${pricing.currency} ` : ""}
                       {pricing.price}
                     </p>
                   )}
@@ -897,9 +902,7 @@ function SoftwareDetail() {
           )}
         </section>
 
-        {/* ==============================================================
-            INTEGRATIONS
-        ============================================================== */}
+        {/* INTEGRATIONS */}
 
         <section className="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
@@ -958,9 +961,9 @@ function SoftwareDetail() {
           )}
         </section>
 
-        {/* ==============================================================
-            RATINGS & REVIEWS
-        ============================================================== */}
+        {/* ================================================================
+            RATING & REVIEW
+        ================================================================= */}
 
         <section className="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <div>
@@ -979,17 +982,21 @@ function SoftwareDetail() {
 
           {/* Rating Summary */}
 
-          <div className="mt-7 grid gap-6 rounded-2xl bg-slate-50 p-6 lg:grid-cols-[220px_1fr] lg:p-7">
-            <div className="text-center lg:border-r lg:border-slate-200">
+          <div className="mt-7 rounded-2xl bg-slate-50 p-6 sm:p-7">
+            <div className="flex flex-col items-center text-center">
               <p className="text-5xl font-black tracking-tight text-slate-900">
-                {ratingStats.total > 0 ? ratingStats.average.toFixed(1) : "—"}
+                {loadingRatings
+                  ? "..."
+                  : ratingStats.total > 0
+                    ? ratingStats.average.toFixed(1)
+                    : "—"}
               </p>
 
               <div className="mt-3 flex justify-center gap-0.5">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
                     key={star}
-                    className="h-4 w-4"
+                    className="h-5 w-5"
                     fill={
                       star <= Math.round(ratingStats.average)
                         ? "currentColor"
@@ -1005,32 +1012,9 @@ function SoftwareDetail() {
                 ))}
               </div>
 
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-2 text-sm text-slate-500">
                 {ratingStats.total} total rating
               </p>
-            </div>
-
-            <div className="space-y-2">
-              {ratingDistribution.map((item) => (
-                <div key={item.star} className="flex items-center gap-3">
-                  <span className="w-8 text-xs font-medium text-slate-500">
-                    {item.star} ★
-                  </span>
-
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200">
-                    <div
-                      className="h-full rounded-full bg-[var(--accent-yellow)] transition-all"
-                      style={{
-                        width: `${item.percentage}%`,
-                      }}
-                    />
-                  </div>
-
-                  <span className="w-8 text-right text-xs text-slate-400">
-                    {item.count}
-                  </span>
-                </div>
-              ))}
             </div>
           </div>
 
@@ -1064,7 +1048,7 @@ function SoftwareDetail() {
                       onMouseEnter={() => setHoverRating(star)}
                       onMouseLeave={() => setHoverRating(0)}
                       aria-label={`Beri rating ${star} dari 5`}
-                      className="rounded-lg p-1 transition hover:scale-110 disabled:opacity-50"
+                      className="rounded-lg p-1 transition hover:scale-110 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Star
                         className="h-7 w-7"
@@ -1105,9 +1089,9 @@ function SoftwareDetail() {
           </div>
         </section>
 
-        {/* ==============================================================
+        {/* ================================================================
             REVIEW FORM
-        ============================================================== */}
+        ================================================================= */}
 
         <section className="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex items-start gap-4">
@@ -1174,9 +1158,9 @@ function SoftwareDetail() {
           )}
         </section>
 
-        {/* ==============================================================
+        {/* ================================================================
             REVIEW LIST
-        ============================================================== */}
+        ================================================================= */}
 
         <section className="mt-8">
           <div className="flex items-end justify-between gap-4">
@@ -1224,63 +1208,61 @@ function SoftwareDetail() {
               </div>
             ) : (
               <div className="space-y-4">
-                {reviews.map((item) => (
-                  <article
-                    key={item.id}
-                    className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md sm:p-7"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--lavender-soft)]">
-                          <Users className="h-5 w-5 text-[var(--primary)]" />
+                {reviews.map((item) => {
+                  const isOwner =
+                    currentUserId !== null &&
+                    Number(item.user_id) === currentUserId;
+
+                  return (
+                    <article
+                      key={item.id}
+                      className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md sm:p-7"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--lavender-soft)]">
+                            <Users className="h-5 w-5 text-[var(--primary)]" />
+                          </div>
+
+                          <div>
+                            <p className="font-semibold text-slate-900">
+                              {item.user?.name || "User"}
+                            </p>
+
+                            <p className="mt-0.5 text-xs text-slate-400">
+                              {item.created_at
+                                ? new Date(item.created_at).toLocaleDateString(
+                                    "id-ID",
+                                    {
+                                      day: "numeric",
+                                      month: "long",
+                                      year: "numeric",
+                                    },
+                                  )
+                                : "Tanggal tidak tersedia"}
+                            </p>
+                          </div>
                         </div>
 
-                        <div>
-                          <p className="font-semibold text-slate-900">
-                            {item.user?.name || "User"}
-                          </p>
-
-                          <p className="mt-0.5 text-xs text-slate-400">
-                            {item.created_at
-                              ? new Date(item.created_at).toLocaleDateString(
-                                  "id-ID",
-                                  {
-                                    day: "numeric",
-                                    month: "long",
-                                    year: "numeric",
-                                  },
-                                )
-                              : "Tanggal tidak tersedia"}
-                          </p>
-                        </div>
+                        {isOwner && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteReview(item.id)}
+                            disabled={deletingReviewId === item.id}
+                            aria-label="Hapus review"
+                            className="rounded-xl p-2 text-slate-300 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteReview(item.id)}
-                        disabled={deletingReviewId === item.id}
-                        aria-label="Hapus review"
-                        className="rounded-xl p-2 text-slate-300 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-
-                    <div className="mt-5 flex gap-0.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className="h-4 w-4 text-slate-200"
-                          fill="currentColor"
-                        />
-                      ))}
-                    </div>
-
-                    <p className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-600">
-                      {item.review}
-                    </p>
-                  </article>
-                ))}
+                      <p className="mt-5 whitespace-pre-line text-sm leading-7 text-slate-600">
+                        {item.review}
+                      </p>
+                    </article>
+                  );
+                })}
               </div>
             )}
           </div>
