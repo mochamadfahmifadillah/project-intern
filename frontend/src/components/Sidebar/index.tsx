@@ -1,75 +1,165 @@
 import {
   BarChart3,
   Boxes,
+  Building2,
+  ChartNoAxesCombined,
+  FileText,
   FolderTree,
-  KeyRound,
+  Handshake,
   LayoutDashboard,
+  Link2,
   Network,
+  Newspaper,
+  Percent,
+  Settings,
   ShieldCheck,
   Store,
   Tags,
   Users,
+  UserPlus,
+  Wrench,
+  BriefcaseBusiness,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 
 function Sidebar() {
-  const { hasPermission } = useAuth();
+  const menuSections = [
+    {
+      title: "CATALOG",
+      items: [
+        {
+          name: "Software",
+          path: "/softwares",
+          icon: Boxes,
+        },
+        {
+          name: "Vendors",
+          path: "/vendors",
+          icon: Store,
+        },
+        {
+          name: "Categories",
+          path: "/software-categories",
+          icon: FolderTree,
+        },
+        {
+          name: "Features",
+          path: "/features",
+          icon: Tags,
+        },
+        {
+          name: "Industries",
+          path: "/industries",
+          icon: Building2,
+        },
+        {
+          name: "Business Sizes",
+          path: "/business-sizes",
+          icon: BriefcaseBusiness,
+        },
+        {
+          name: "Integrations",
+          path: "/software-integrations",
+          icon: Network,
+        },
+      ],
+    },
 
-  const menuItems = [
     {
-      name: "Pengguna",
-      path: "/users",
-      permission: "users.view",
-      icon: Users,
+      title: "ENGAGEMENT",
+      items: [
+        {
+          name: "Reviews",
+          path: "/reviews",
+          icon: FileText,
+        },
+        {
+          name: "Implementation Leads",
+          path: "/implementation-leads",
+          icon: UserPlus,
+        },
+        {
+          name: "Partners",
+          path: "/partners",
+          icon: Handshake,
+        },
+      ],
     },
+
     {
-      name: "Role",
-      path: "/roles",
-      permission: "roles.view",
-      icon: ShieldCheck,
+      title: "CONTENT",
+      items: [
+        {
+          name: "Articles",
+          path: "/articles",
+          icon: Newspaper,
+        },
+        {
+          name: "Tutorials",
+          path: "/tutorials",
+          icon: Wrench,
+        },
+        {
+          name: "Case Studies",
+          path: "/case-studies",
+          icon: FileText,
+        },
+      ],
     },
+
     {
-      name: "Permission",
-      path: "/permissions",
-      permission: "permissions.view",
-      icon: KeyRound,
+      title: "MONETIZATION",
+      items: [
+        {
+          name: "Affiliate Programs",
+          path: "/affiliate-programs",
+          icon: Handshake,
+        },
+        {
+          name: "Affiliate Links",
+          path: "/affiliate-links",
+          icon: Link2,
+        },
+        {
+          name: "Commision",
+          path: "/commision",
+          icon: Percent,
+        },
+      ],
     },
+
     {
-      name: "Software",
-      path: "/softwares",
-      permission: "softwares.view",
-      icon: Boxes,
+      title: "ANALYTICS",
+      items: [
+        {
+          name: "Analytics",
+          path: "/analytics",
+          icon: ChartNoAxesCombined,
+        },
+      ],
     },
+
     {
-      name: "Kategori Software",
-      path: "/software-categories",
-      permission: "software-categories.view",
-      icon: FolderTree,
-    },
-    {
-      name: "Pricing Software",
-      path: "/software-pricings",
-      permission: "software-pricings.view",
-      icon: Tags,
-    },
-    {
-      name: "Integrasi Software",
-      path: "/software-integrations",
-      permission: "software-integrations.view",
-      icon: Network,
-    },
-    {
-      name: "Vendor",
-      path: "/vendors",
-      permission: "vendors.view",
-      icon: Store,
+      title: "SYSTEM",
+      items: [
+        {
+          name: "Users & Roles",
+          path: "/users",
+          icon: Users,
+        },
+        {
+          name: "Settings",
+          path: "/settings",
+          icon: Settings,
+        },
+        {
+          name: "Audit Logs",
+          path: "/audit-logs",
+          icon: ShieldCheck,
+        },
+      ],
     },
   ];
-
-  const visibleMenuItems = menuItems.filter((item) =>
-    hasPermission(item.permission),
-  );
 
   return (
     <aside
@@ -140,206 +230,196 @@ function Sidebar() {
           NAVIGATION
       ====================================================== */}
 
-      <nav className="flex-1 overflow-y-auto px-3 py-6">
+      <nav className="flex-1 overflow-y-auto px-3 py-5">
         {/* ===================================================
-            UTAMA
+            DASHBOARD
         ==================================================== */}
 
-        <div>
-          <p
-            className="
-              mb-2
-              px-3
-              text-[10px]
-              font-bold
-              uppercase
-              tracking-[0.18em]
-            "
-            style={{
-              color: "rgba(255,255,255,0.42)",
-            }}
-          >
-            Utama
-          </p>
-
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) =>
-              [
-                "group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5",
-                "text-sm font-medium transition-all duration-200",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
-                isActive
-                  ? "text-white shadow-lg"
-                  : "text-white/65 hover:bg-white/10 hover:text-white",
-              ].join(" ")
-            }
-            style={({ isActive }) =>
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) =>
+            [
+              "group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5",
+              "text-sm font-medium transition-all duration-200",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
               isActive
-                ? {
-                    backgroundColor: "rgba(255,255,255,0.14)",
-                  }
-                : undefined
-            }
-          >
-            {({ isActive }) => (
-              <>
-                {isActive && (
-                  <span
-                    className="
-                      absolute
-                      left-0
-                      top-1/2
-                      h-6
-                      w-1
-                      -translate-y-1/2
-                      rounded-r-full
-                    "
-                    style={{
-                      backgroundColor: "var(--accent-yellow)",
-                    }}
-                  />
-                )}
-
+                ? "text-white shadow-lg"
+                : "text-white/65 hover:bg-white/10 hover:text-white",
+            ].join(" ")
+          }
+          style={({ isActive }) =>
+            isActive
+              ? {
+                  backgroundColor: "rgba(255,255,255,0.14)",
+                }
+              : undefined
+          }
+        >
+          {({ isActive }) => (
+            <>
+              {isActive && (
                 <span
                   className="
-                    flex
-                    h-8
-                    w-8
-                    items-center
-                    justify-center
-                    rounded-lg
+                    absolute
+                    left-0
+                    top-1/2
+                    h-6
+                    w-1
+                    -translate-y-1/2
+                    rounded-r-full
                   "
                   style={{
-                    backgroundColor: isActive
-                      ? "var(--accent-yellow)"
-                      : "rgba(255,255,255,0.08)",
-                    color: isActive
-                      ? "var(--primary-dark)"
-                      : "rgba(255,255,255,0.65)",
+                    backgroundColor: "var(--accent-yellow)",
                   }}
-                >
-                  <LayoutDashboard className="h-4 w-4" />
-                </span>
+                />
+              )}
 
-                <span>Dashboard</span>
-              </>
-            )}
-          </NavLink>
-        </div>
+              <span
+                className="
+                  flex
+                  h-8
+                  w-8
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-lg
+                "
+                style={{
+                  backgroundColor: isActive
+                    ? "var(--accent-yellow)"
+                    : "rgba(255,255,255,0.08)",
+                  color: isActive
+                    ? "var(--primary-dark)"
+                    : "rgba(255,255,255,0.65)",
+                }}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+              </span>
+
+              <span>Dashboard</span>
+            </>
+          )}
+        </NavLink>
 
         {/* ===================================================
-            MANAJEMEN
+            MENU SECTIONS
         ==================================================== */}
 
-        {visibleMenuItems.length > 0 && (
-          <div className="mt-8">
-            <p
-              className="
-                mb-2
-                px-3
-                text-[10px]
-                font-bold
-                uppercase
-                tracking-[0.18em]
-              "
-              style={{
-                color: "rgba(255,255,255,0.42)",
-              }}
-            >
-              Manajemen
-            </p>
+        <div className="mt-7 space-y-7">
+          {menuSections.map((section) => (
+            <div key={section.title}>
+              {/* SECTION TITLE */}
 
-            <div className="space-y-1">
-              {visibleMenuItems.map((item) => {
-                const Icon = item.icon;
+              <p
+                className="
+                  mb-2
+                  px-3
+                  text-[10px]
+                  font-bold
+                  uppercase
+                  tracking-[0.18em]
+                "
+                style={{
+                  color: "rgba(255,255,255,0.42)",
+                }}
+              >
+                {section.title}
+              </p>
 
-                return (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    className={({ isActive }) =>
-                      [
-                        "group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5",
-                        "text-sm font-medium transition-all duration-200",
-                        "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
+              {/* SECTION ITEMS */}
+
+              <div className="space-y-1">
+                {section.items.map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      className={({ isActive }) =>
+                        [
+                          "group relative flex min-h-10 items-center gap-3 rounded-xl px-3 py-2",
+                          "text-sm font-medium transition-all duration-200",
+                          "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
+                          isActive
+                            ? "text-white shadow-lg"
+                            : "text-white/65 hover:bg-white/10 hover:text-white",
+                        ].join(" ")
+                      }
+                      style={({ isActive }) =>
                         isActive
-                          ? "text-white shadow-lg"
-                          : "text-white/65 hover:bg-white/10 hover:text-white",
-                      ].join(" ")
-                    }
-                    style={({ isActive }) =>
-                      isActive
-                        ? {
-                            backgroundColor: "rgba(255,255,255,0.14)",
-                          }
-                        : undefined
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        {isActive && (
+                          ? {
+                              backgroundColor: "rgba(255,255,255,0.14)",
+                            }
+                          : undefined
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          {isActive && (
+                            <span
+                              className="
+                                absolute
+                                left-0
+                                top-1/2
+                                h-5
+                                w-1
+                                -translate-y-1/2
+                                rounded-r-full
+                              "
+                              style={{
+                                backgroundColor: "var(--accent-yellow)",
+                              }}
+                            />
+                          )}
+
                           <span
                             className="
-                              absolute
-                              left-0
-                              top-1/2
-                              h-6
-                              w-1
-                              -translate-y-1/2
-                              rounded-r-full
+                              flex
+                              h-8
+                              w-8
+                              shrink-0
+                              items-center
+                              justify-center
+                              rounded-lg
+                              transition-all
+                              duration-200
                             "
                             style={{
-                              backgroundColor: "var(--accent-yellow)",
+                              backgroundColor: isActive
+                                ? "var(--accent-yellow)"
+                                : "rgba(255,255,255,0.08)",
+                              color: isActive
+                                ? "var(--primary-dark)"
+                                : "rgba(255,255,255,0.65)",
                             }}
-                          />
-                        )}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </span>
 
-                        <span
-                          className="
-                            flex
-                            h-8
-                            w-8
-                            items-center
-                            justify-center
-                            rounded-lg
-                            transition-all
-                            duration-200
-                          "
-                          style={{
-                            backgroundColor: isActive
-                              ? "var(--accent-yellow)"
-                              : "rgba(255,255,255,0.08)",
-                            color: isActive
-                              ? "var(--primary-dark)"
-                              : "rgba(255,255,255,0.65)",
-                          }}
-                        >
-                          <Icon className="h-4 w-4" />
-                        </span>
-
-                        <span>{item.name}</span>
-                      </>
-                    )}
-                  </NavLink>
-                );
-              })}
+                          <span className="truncate">{item.name}</span>
+                        </>
+                      )}
+                    </NavLink>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
       </nav>
 
       {/* =====================================================
           BOTTOM INFO
       ====================================================== */}
 
-      <div className="p-4">
+      <div className="p-4 pt-2">
         <div
           className="
             rounded-2xl
             border
             px-4
-            py-4
+            py-3.5
           "
           style={{
             backgroundColor: "rgba(255,255,255,0.08)",
@@ -358,7 +438,7 @@ function Sidebar() {
             <p className="text-xs font-semibold text-white">Sistem Aktif</p>
           </div>
 
-          <p className="mt-2 text-[11px] leading-5 text-white/45">
+          <p className="mt-1.5 text-[11px] leading-5 text-white/45">
             Panel administrasi Software Empire
           </p>
         </div>
