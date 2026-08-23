@@ -172,9 +172,14 @@ function Sidebar() {
         shrink-0
         flex-col
         overflow-hidden
+        border-r
+        border-gray-200
+        bg-white
+        text-black
       "
       style={{
-        backgroundColor: "var(--primary)",
+        backgroundColor: "white",
+        color: "black",
       }}
     >
       {/* =====================================================
@@ -200,17 +205,17 @@ function Sidebar() {
             <BarChart3
               className="h-5 w-5"
               style={{
-                color: "var(--primary-dark)",
+                color: "black",
               }}
             />
           </div>
 
           <div>
-            <p className="text-sm font-bold tracking-tight text-white">
+            <p className="text-sm font-bold tracking-tight text-black">
               Software Empire
             </p>
 
-            <p className="mt-0.5 text-[11px] text-white/50">Administration</p>
+            <p className="mt-0.5 text-[11px] text-black/50">Administration</p>
           </div>
         </div>
       </div>
@@ -219,12 +224,7 @@ function Sidebar() {
           DIVIDER
       ====================================================== */}
 
-      <div
-        className="mx-5 border-t"
-        style={{
-          borderColor: "rgba(255,255,255,0.10)",
-        }}
-      />
+      <div className="mx-5 border-t border-gray-200" />
 
       {/* =====================================================
           NAVIGATION
@@ -241,16 +241,16 @@ function Sidebar() {
             [
               "group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5",
               "text-sm font-medium transition-all duration-200",
-              "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20",
               isActive
-                ? "text-white shadow-lg"
-                : "text-white/65 hover:bg-white/10 hover:text-white",
+                ? "text-black shadow-sm"
+                : "text-black/65 hover:bg-black/[0.04] hover:text-black",
             ].join(" ")
           }
           style={({ isActive }) =>
             isActive
               ? {
-                  backgroundColor: "rgba(255,255,255,0.14)",
+                  backgroundColor: "rgba(0,0,0,0.06)",
                 }
               : undefined
           }
@@ -287,10 +287,8 @@ function Sidebar() {
                 style={{
                   backgroundColor: isActive
                     ? "var(--accent-yellow)"
-                    : "rgba(255,255,255,0.08)",
-                  color: isActive
-                    ? "var(--primary-dark)"
-                    : "rgba(255,255,255,0.65)",
+                    : "rgba(0,0,0,0.05)",
+                  color: "black",
                 }}
               >
                 <LayoutDashboard className="h-4 w-4" />
@@ -318,10 +316,8 @@ function Sidebar() {
                   font-bold
                   uppercase
                   tracking-[0.18em]
+                  text-black/40
                 "
-                style={{
-                  color: "rgba(255,255,255,0.42)",
-                }}
               >
                 {section.title}
               </p>
@@ -340,22 +336,24 @@ function Sidebar() {
                         [
                           "group relative flex min-h-10 items-center gap-3 rounded-xl px-3 py-2",
                           "text-sm font-medium transition-all duration-200",
-                          "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
+                          "focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20",
                           isActive
-                            ? "text-white shadow-lg"
-                            : "text-white/65 hover:bg-white/10 hover:text-white",
+                            ? "text-black shadow-sm"
+                            : "text-black/65 hover:bg-black/[0.04] hover:text-black",
                         ].join(" ")
                       }
                       style={({ isActive }) =>
                         isActive
                           ? {
-                              backgroundColor: "rgba(255,255,255,0.14)",
+                              backgroundColor: "rgba(0,0,0,0.06)",
                             }
                           : undefined
                       }
                     >
                       {({ isActive }) => (
                         <>
+                          {/* ACTIVE INDICATOR */}
+
                           {isActive && (
                             <span
                               className="
@@ -373,6 +371,8 @@ function Sidebar() {
                             />
                           )}
 
+                          {/* ICON */}
+
                           <span
                             className="
                               flex
@@ -388,16 +388,18 @@ function Sidebar() {
                             style={{
                               backgroundColor: isActive
                                 ? "var(--accent-yellow)"
-                                : "rgba(255,255,255,0.08)",
-                              color: isActive
-                                ? "var(--primary-dark)"
-                                : "rgba(255,255,255,0.65)",
+                                : "rgba(0,0,0,0.05)",
+                              color: "black",
                             }}
                           >
                             <Icon className="h-4 w-4" />
                           </span>
 
-                          <span className="truncate">{item.name}</span>
+                          {/* LABEL */}
+
+                          <span className="truncate text-black">
+                            {item.name}
+                          </span>
                         </>
                       )}
                     </NavLink>
@@ -418,12 +420,14 @@ function Sidebar() {
           className="
             rounded-2xl
             border
+            border-gray-200
+            bg-gray-50
             px-4
             py-3.5
           "
           style={{
-            backgroundColor: "rgba(255,255,255,0.08)",
-            borderColor: "rgba(255,255,255,0.12)",
+            backgroundColor: "#f9fafb",
+            borderColor: "#e5e7eb",
           }}
         >
           <div className="flex items-center gap-2.5">
@@ -435,10 +439,10 @@ function Sidebar() {
               }}
             />
 
-            <p className="text-xs font-semibold text-white">Sistem Aktif</p>
+            <p className="text-xs font-semibold text-black">Sistem Aktif</p>
           </div>
 
-          <p className="mt-1.5 text-[11px] leading-5 text-white/45">
+          <p className="mt-1.5 text-[11px] leading-5 text-black/45">
             Panel administrasi Software Empire
           </p>
         </div>

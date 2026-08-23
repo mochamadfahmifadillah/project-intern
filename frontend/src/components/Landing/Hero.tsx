@@ -1,294 +1,255 @@
-import { useEffect, useState } from "react";
-import { ChevronDown, Search, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowRight, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 
-import {
-  getPublicSoftwareCategories,
-  type SoftwareCategory,
-} from "../../services/softwareService";
+const recommendations = [
+  {
+    number: 1,
+    name: "Zoho CRM",
+    rating: "4.6",
+    logo: "∞",
+  },
+  {
+    number: 2,
+    name: "HubSpot CRM",
+    rating: "4.5",
+    logo: "●",
+  },
+  {
+    number: 3,
+    name: "Salesforce Sales Cloud",
+    rating: "4.4",
+    logo: "☁",
+  },
+];
 
 function Hero() {
-  const navigate = useNavigate();
-
-  const [categories, setCategories] = useState<SoftwareCategory[]>([]);
-  const [category, setCategory] = useState("");
-  const [search, setSearch] = useState("");
-  const [loadingCategories, setLoadingCategories] = useState(true);
-
-  /*
-  |--------------------------------------------------------------------------
-  | Load Categories
-  |--------------------------------------------------------------------------
-  */
-
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        setLoadingCategories(true);
-
-        const response = await getPublicSoftwareCategories();
-
-        setCategories(Array.isArray(response?.data) ? response.data : []);
-      } catch (error) {
-        console.error("Failed to load software categories:", error);
-        setCategories([]);
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
-
-    loadCategories();
-  }, []);
-
-  /*
-  |--------------------------------------------------------------------------
-  | Search
-  |--------------------------------------------------------------------------
-  */
-
-  const handleSearch = () => {
-    const params = new URLSearchParams();
-
-    if (search.trim()) {
-      params.set("search", search.trim());
-    }
-
-    if (category.trim()) {
-      params.set("category", category);
-    }
-
-    const query = params.toString();
-
-    navigate(`/software-directory${query ? `?${query}` : ""}`);
-  };
-
-  /*
-  |--------------------------------------------------------------------------
-  | Category
-  |--------------------------------------------------------------------------
-  */
-
-  const handleCategoryClick = (slug: string) => {
-    setCategory(slug);
-
-    navigate(`/software-directory?category=${encodeURIComponent(slug)}`);
-  };
-
-  /*
-  |--------------------------------------------------------------------------
-  | Navigation
-  |--------------------------------------------------------------------------
-  */
-
-  const handleExplore = () => {
-    navigate("/software-directory");
-  };
-
-  const handleCompare = () => {
-    navigate("/software-comparison");
-  };
-
   return (
-    <section className="relative isolate overflow-hidden border-b border-[#ddd7e8]">
-      {/* ================================================================= */}
-      {/* BACKGROUND */}
-      {/* ================================================================= */}
+    <section className="relative overflow-hidden bg-[#F7F9FC]">
+      {/* Background decoration */}
+      <div className="absolute right-[-100px] top-[-120px] h-[480px] w-[480px] rounded-full bg-[#E7F0FF] blur-3xl" />
 
-      <div className="absolute inset-0 -z-20">
-        <img
-          src="/background1.webp"
-          alt=""
-          aria-hidden="true"
-          className="h-full w-full object-cover object-center"
-        />
-      </div>
+      <div className="relative mx-auto grid max-w-[1180px] items-center gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[1fr_0.9fr] lg:py-[72px]">
+        {/* Left */}
+        <div>
+          <h1 className="max-w-[570px] text-[42px] font-bold leading-[1.08] tracking-[-1.8px] text-[#0F172A] sm:text-[48px]">
+            Find the <span className="text-[#0D47A1]">Best Software</span>
+            <br />
+            for Your Business
+          </h1>
 
-      {/* Subtle readability gradient */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white/65 via-white/35 to-white/75" />
+          <p className="mt-5 max-w-[390px] text-[14px] leading-5 text-[#334155]">
+            Discover, compare, and choose the right software with confidence.
+            1000+ software, real reviews, and smart recommendations.
+          </p>
 
-      {/* Small brand accent */}
-      <div className="absolute left-0 top-0 h-1 w-full bg-[#704FE6]" />
+          {/* Search */}
+          <div className="mt-6 flex max-w-[395px] overflow-hidden rounded-lg border border-[#D9E0EA] bg-white shadow-sm">
+            <input
+              type="text"
+              placeholder="Search software, category, or business need..."
+              className="min-w-0 flex-1 px-4 py-3 text-[11px] text-[#334155] outline-none placeholder:text-[#94A3B8]"
+            />
 
-      {/* ================================================================= */}
-      {/* CONTENT */}
-      {/* ================================================================= */}
-
-      <div className="mx-auto flex min-h-[700px] max-w-[1180px] flex-col items-center justify-center px-6 py-24 text-center lg:px-8">
-        {/* Eyebrow */}
-
-        <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#625b70]">
-          <span className="h-px w-8 bg-[#704FE6]" />
-          Software Intelligence Platform
-          <span className="h-px w-8 bg-[#704FE6]" />
-        </div>
-
-        {/* Heading */}
-
-        <h1 className="mt-7 max-w-[850px] text-[46px] font-bold leading-[1.04] tracking-[-2.2px] text-[#17151d] sm:text-[54px] md:text-[62px] lg:text-[68px]">
-          Find software that
-          <span className="block text-[#704FE6]">
-            moves your business forward.
-          </span>
-        </h1>
-
-        {/* Description */}
-
-        <p className="mt-6 max-w-[620px] text-[15px] leading-7 text-[#5d5768] md:text-[16px]">
-          Discover, evaluate, and compare business software based on your needs,
-          budget, industry, and integrations.
-        </p>
-
-        {/* ================================================================= */}
-        {/* SEARCH */}
-        {/* ================================================================= */}
-
-        <div className="mt-10 w-full max-w-[780px]">
-          <div className="flex flex-col rounded-[2px] border border-[#d7d0e1] bg-white p-2 shadow-[0_20px_55px_rgba(42,30,75,0.14)] md:h-[68px] md:flex-row">
-            {/* Category */}
-
-            <div className="relative flex h-[52px] items-center border-b border-[#ebe7f0] px-4 md:h-full md:w-[190px] md:border-b-0 md:border-r">
-              <select
-                value={category}
-                onChange={(event) => setCategory(event.target.value)}
-                disabled={loadingCategories}
-                className="w-full cursor-pointer appearance-none bg-transparent pr-7 text-left text-[13px] font-medium text-[#35303f] outline-none disabled:cursor-wait"
-              >
-                <option value="">
-                  {loadingCategories ? "Loading..." : "All Categories"}
-                </option>
-
-                {categories.map((item) => (
-                  <option key={item.id} value={item.slug}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-
-              <ChevronDown
-                size={16}
-                strokeWidth={1.8}
-                className="pointer-events-none absolute right-4 text-[#777080]"
-              />
-            </div>
-
-            {/* Search Input */}
-
-            <div className="flex h-[52px] flex-1 items-center px-4 md:h-full">
-              <Search
-                size={20}
-                strokeWidth={1.8}
-                className="mr-3 shrink-0 text-[#704FE6]"
-              />
-
-              <input
-                type="text"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    handleSearch();
-                  }
-                }}
-                placeholder="Search software, tools, or solutions..."
-                className="w-full bg-transparent text-[14px] text-[#201d27] outline-none placeholder:text-[#9791a0]"
-              />
-            </div>
-
-            {/* Search */}
-
-            <button
-              type="button"
-              onClick={handleSearch}
-              className="group flex h-[48px] items-center justify-center gap-2 bg-[#704FE6] px-8 text-[13px] font-bold text-white transition hover:bg-[#6F4FDE] md:h-[52px]"
-            >
-              Search
-              <ArrowRight
-                size={15}
-                className="transition-transform duration-200 group-hover:translate-x-1"
-              />
+            <button className="flex w-12 shrink-0 items-center justify-center bg-[#0D47A1] text-white">
+              <Search size={18} />
             </button>
           </div>
 
-          {/* Search hint */}
-
-          <div className="mt-3 flex justify-between px-1 text-[10px] text-[#817a8d]">
-            <span>Search by name, category, or business need</span>
-
-            <span className="hidden sm:block">Press Enter to search</span>
-          </div>
-        </div>
-
-        {/* ================================================================= */}
-        {/* POPULAR */}
-        {/* ================================================================= */}
-
-        {!loadingCategories && categories.length > 0 && (
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#817a8d]">
-              Popular
+          {/* Popular searches */}
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px]">
+            <span className="mr-1 font-medium text-[#334155]">
+              Popular searches:
             </span>
 
-            {categories.slice(0, 6).map((item, index) => (
+            {[
+              "CRM",
+              "Accounting",
+              "ERP",
+              "HR Software",
+              "Project Management",
+            ].map((item) => (
               <button
-                key={item.id}
-                type="button"
-                onClick={() => handleCategoryClick(item.slug)}
-                className={`text-[12px] font-medium underline decoration-transparent underline-offset-4 transition hover:decoration-current ${
-                  index === 0
-                    ? "text-[#704FE6]"
-                    : "text-[#514b5b] hover:text-[#704FE6]"
-                }`}
+                key={item}
+                className="rounded-md border border-[#DDE4ED] bg-white px-2.5 py-1.5 text-[#334155] hover:border-[#0D47A1] hover:text-[#0D47A1]"
               >
-                {item.name}
+                {item}
               </button>
             ))}
           </div>
-        )}
-
-        {/* ================================================================= */}
-        {/* CTA */}
-        {/* ================================================================= */}
-
-        <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
-          <button
-            type="button"
-            onClick={handleExplore}
-            className="group inline-flex min-w-[175px] items-center justify-center gap-2 bg-[#704FE6] px-7 py-3.5 text-[13px] font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#6F4FDE]"
-          >
-            Explore Software
-            <ArrowRight
-              size={15}
-              className="transition-transform duration-200 group-hover:translate-x-1"
-            />
-          </button>
-
-          <button
-            type="button"
-            onClick={handleCompare}
-            className="min-w-[175px] border border-[#cbc3d8] bg-white px-7 py-3.5 text-[13px] font-semibold text-[#302b3b] transition hover:border-[#704FE6] hover:text-[#704FE6]"
-          >
-            Compare Software
-          </button>
         </div>
 
-        {/* ================================================================= */}
-        {/* JOURNEY */}
-        {/* ================================================================= */}
+        {/* Right visual */}
+        <div className="relative hidden min-h-[360px] lg:block">
+          {/* Match score */}
+          <div className="absolute left-0 top-[105px] z-20 rounded-lg border border-[#E1E7EF] bg-white px-5 py-4 text-center shadow-[0_10px_30px_rgba(15,23,42,0.08)]">
+            <ShieldCheck className="mx-auto text-[#16A579]" size={19} />
 
-        <div className="mt-12 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8b8495]">
-          <span>Discover</span>
+            <p className="mt-1 text-[22px] font-bold text-[#16A579]">95%</p>
 
-          <span className="h-1 w-1 rounded-full bg-[#DEC8FE]" />
+            <p className="text-[10px] text-[#64748B]">Match Score</p>
+          </div>
 
-          <span>Evaluate</span>
+          {/* Recommendation card */}
+          <div className="absolute right-4 top-8 w-[370px] rounded-xl border border-[#E1E7EF] bg-white p-5 shadow-[0_15px_40px_rgba(15,23,42,0.09)]">
+            <div className="mb-5 flex items-center justify-between">
+              <h3 className="text-[12px] font-bold text-[#0F172A]">
+                Top Recommendation for You
+              </h3>
 
-          <span className="h-1 w-1 rounded-full bg-[#FFD361]" />
+              <Sparkles size={18} className="text-[#0D47A1]" />
+            </div>
 
-          <span>Compare</span>
+            <div className="space-y-2">
+              {recommendations.map((item) => (
+                <div
+                  key={item.number}
+                  className="flex items-center gap-3 rounded-lg border border-[#E8EDF3] px-3 py-3"
+                >
+                  <span className="w-4 text-[12px] font-semibold text-[#0F172A]">
+                    {item.number}
+                  </span>
 
-          <span className="h-1 w-1 rounded-full bg-[#704FE6]" />
+                  <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#F1F5F9] text-[#0D47A1]">
+                    {item.logo}
+                  </div>
 
-          <span>Decide</span>
+                  <div className="flex-1">
+                    <p className="text-[10px] font-semibold text-[#0F172A]">
+                      {item.name}
+                    </p>
+
+                    <div className="mt-1 flex items-center gap-1 text-[#F5A623]">
+                      <span className="text-[9px]">★★★★★</span>
+
+                      <span className="text-[8px] text-[#64748B]">
+                        {item.rating}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button className="rounded border border-[#DCE3EC] px-2 py-1 text-[8px] font-medium text-[#0D47A1]">
+                    View Details
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Compare floating */}
+          <div className="absolute right-0 top-[-10px] z-30 flex items-center gap-2 rounded-lg bg-white px-4 py-3 shadow-[0_10px_30px_rgba(15,23,42,0.1)]">
+            <Sparkles size={18} className="text-[#0D47A1]" />
+
+            <div>
+              <p className="text-[10px] font-semibold text-[#0F172A]">
+                Compare
+              </p>
+
+              <p className="text-[8px] text-[#64748B]">Side by side</p>
+            </div>
+          </div>
+
+          {/* Software count */}
+          <div className="absolute bottom-0 right-[-5px] flex items-center gap-2 rounded-lg bg-white px-4 py-3 shadow-[0_10px_30px_rgba(15,23,42,0.1)]">
+            <div className="text-[#0D47A1]">
+              <Sparkles size={20} />
+            </div>
+
+            <div>
+              <p className="text-[18px] font-bold text-[#0F172A]">1000+</p>
+
+              <p className="text-[9px] text-[#64748B]">Software</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile recommendation */}
+      <div className="px-5 pb-10 lg:hidden">
+        <div className="rounded-xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-xs font-bold text-[#0F172A]">
+              Top Recommendation for You
+            </h3>
+
+            <Sparkles size={16} className="text-[#0D47A1]" />
+          </div>
+
+          <div className="space-y-2">
+            {recommendations.map((item) => (
+              <div
+                key={item.number}
+                className="flex items-center gap-2 rounded-lg border border-[#E8EDF3] p-2.5"
+              >
+                <span className="text-xs font-semibold">{item.number}</span>
+
+                <div className="h-7 w-7 rounded bg-[#F1F5F9] text-center text-sm leading-7 text-[#0D47A1]">
+                  {item.logo}
+                </div>
+
+                <div className="flex-1">
+                  <p className="text-[10px] font-semibold">{item.name}</p>
+
+                  <p className="text-[9px] text-[#F5A623]">
+                    ★★★★★ {item.rating}
+                  </p>
+                </div>
+
+                <ArrowRight size={13} className="text-[#0D47A1]" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop CTA strip */}
+      <div className="relative mx-auto hidden max-w-[1100px] px-5 pb-8 lg:block">
+        <div className="grid grid-cols-4 rounded-xl border border-[#E1E7EF] bg-white shadow-sm">
+          {[
+            {
+              title: "1000+ Software",
+              description:
+                "Explore verified business software across all categories.",
+            },
+            {
+              title: "Compare Easily",
+              description:
+                "Compare features, pricing, and reviews side by side.",
+            },
+            {
+              title: "Smart Recommendation",
+              description:
+                "Get AI-powered recommendations based on your business needs.",
+            },
+            {
+              title: "Trusted Reviews",
+              description:
+                "Real user reviews to help you make confident decisions.",
+            },
+          ].map((item, index) => (
+            <div
+              key={item.title}
+              className={`flex gap-3 p-5 ${
+                index !== 3 ? "border-r border-[#E8EDF3]" : ""
+              }`}
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EFF5FF] text-[#0D47A1]">
+                {index === 0 && "◈"}
+                {index === 1 && "⚖"}
+                {index === 2 && "✦"}
+                {index === 3 && "✓"}
+              </div>
+
+              <div>
+                <h3 className="text-[11px] font-bold text-[#0F172A]">
+                  {item.title}
+                </h3>
+
+                <p className="mt-1 text-[9px] leading-4 text-[#64748B]">
+                  {item.description}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

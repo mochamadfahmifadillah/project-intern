@@ -1,11 +1,8 @@
 import Navbar from "../../components/landing/Navbar";
 import Hero from "../../components/landing/Hero";
-import FeaturedSoftware from "../../components/landing/FeaturedSoftware";
-import Statistics from "../../components/landing/Statistics";
-import HowItWorks from "../../components/landing/HowItWorks";
-import WhySoftwareEmpire from "../../components/landing/WhySoftwareEmpire";
-import CTASection from "../../components/landing/CTASection";
-import Footer from "../../components/landing/Footer";
+import SoftwareShowcase from "../../components/landing/SoftwareShowcase";
+import RecommendationCTA from "../../components/landing/RecommendationCTA";
+import TrustedCompanies from "../../components/landing/TrustedCompanies";
 
 function Landing() {
   return (
@@ -14,14 +11,10 @@ function Landing() {
 
       <main>
         <Hero />
-        <FeaturedSoftware />
-        <Statistics />
-         <HowItWorks />
-         <WhySoftwareEmpire />
-        <CTASection />
+        <SoftwareShowcase />
+        <RecommendationCTA />
+        <TrustedCompanies />
       </main>
-
-      <Footer />
     </div>
   );
 }

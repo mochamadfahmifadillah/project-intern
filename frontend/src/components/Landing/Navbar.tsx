@@ -1,220 +1,100 @@
-import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { ChevronDown, Menu, Search } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function Navbar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const closeMobileMenu = () => {
-    setMobileOpen(false);
-  };
-
-  const navItems = [
-    {
-      label: "Software",
-      to: "/software-directory",
-    },
-    {
-      label: "Categories",
-      to: "/software-directory",
-    },
-    {
-      label: "Compare",
-      to: "/software-comparison",
-    },
-    {
-      label: "Vendors",
-      to: "/vendors",
-    },
-    {
-      label: "Resources",
-      to: "/#resources",
-    },
-  ];
-
   return (
-    <header className="sticky top-0 z-50 border-b border-[#e8e3ef] bg-white/90 backdrop-blur-xl">
-      <div className="mx-auto flex h-[76px] max-w-[1280px] items-center justify-between px-5 sm:px-8">
-        {/* ============================================================
-            LOGO
-        ============================================================ */}
-
-        <Link
-          to="/"
-          onClick={closeMobileMenu}
-          className="group flex items-center gap-3"
-        >
-          {/* Logo Mark */}
-
-          <div className="relative flex h-9 w-9 items-center justify-center">
-            <div className="absolute h-[7px] w-[7px] rounded-full bg-[#704FE6]" />
-
-            <div className="absolute h-[22px] w-[4px] rounded-full bg-[#704FE6]" />
-
-            <div className="absolute h-[4px] w-[22px] rounded-full bg-[#704FE6]" />
-
-            <div className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-[#FFD361]" />
+    <header className="border-b border-[#E5EAF1] bg-white">
+      <div className="mx-auto flex h-[64px] max-w-[1180px] items-center justify-between px-5 sm:px-8">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#0D47A1] text-lg font-black text-white">
+            S
           </div>
 
-          {/* Brand */}
-
           <div className="leading-none">
-            <span className="block text-[19px] font-bold tracking-[-0.6px] text-[#18161d] sm:text-[20px]">
-              Software Empire
-            </span>
+            <div className="text-[13px] font-bold tracking-wide text-[#0F2A5A]">
+              SOFTWARE
+            </div>
 
-            <span className="mt-1 hidden text-[8px] font-semibold uppercase tracking-[0.18em] text-[#91899d] sm:block">
-              Software Intelligence
-            </span>
+            <div className="text-[13px] font-bold tracking-[3px] text-[#F5A623]">
+              EMPIRE
+            </div>
           </div>
         </Link>
 
-        {/* ============================================================
-            DESKTOP NAVIGATION
-        ============================================================ */}
+        {/* Desktop Navigation */}
+        <nav className="hidden items-center gap-7 lg:flex">
+          <Link
+            to="/software-directory"
+            className="flex items-center gap-1 text-[11px] font-medium text-[#17233C] hover:text-[#0D47A1]"
+          >
+            Software
+            <ChevronDown size={12} />
+          </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.label}
-              to={item.to}
-              className={({ isActive }) =>
-                `relative px-4 py-2.5 text-[13px] font-medium transition ${
-                  isActive
-                    ? "text-[#704FE6]"
-                    : "text-[#514b5b] hover:text-[#704FE6]"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {item.label}
+          <Link
+            to="/categories"
+            className="text-[11px] font-medium text-[#17233C] hover:text-[#0D47A1]"
+          >
+            Categories
+          </Link>
 
-                  {isActive && (
-                    <span className="absolute bottom-0 left-4 right-4 h-[2px] rounded-full bg-[#704FE6]" />
-                  )}
-                </>
-              )}
-            </NavLink>
-          ))}
+          <Link
+            to="/compare"
+            className="text-[11px] font-medium text-[#17233C] hover:text-[#0D47A1]"
+          >
+            Compare
+          </Link>
+
+          <Link
+            to="/recommend"
+            className="text-[11px] font-medium text-[#17233C] hover:text-[#0D47A1]"
+          >
+            Recommend
+          </Link>
+
+          <Link
+            to="/learn"
+            className="flex items-center gap-1 text-[11px] font-medium text-[#17233C]"
+          >
+            Learn
+            <ChevronDown size={12} />
+          </Link>
+
+          <Link
+            to="/vendors"
+            className="text-[11px] font-medium text-[#17233C]"
+          >
+            For Vendors
+          </Link>
         </nav>
 
-        {/* ============================================================
-            RIGHT ACTIONS
-        ============================================================ */}
-
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Login */}
+        {/* Right */}
+        <div className="hidden items-center gap-3 lg:flex">
+          <button className="p-2 text-[#0F172A]">
+            <Search size={17} />
+          </button>
 
           <Link
             to="/login"
-            className="hidden px-3 py-2.5 text-[13px] font-semibold text-[#403a4b] transition hover:text-[#704FE6] sm:block"
+            className="rounded-md border border-[#DCE3EC] px-4 py-2 text-[11px] font-medium text-[#17233C]"
           >
             Login
           </Link>
 
-          {/* CTA */}
-
           <Link
-            to="/software-directory"
-            className="group hidden items-center gap-2 bg-[#704FE6] px-5 py-3 text-[12px] font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#6F4FDE] sm:inline-flex"
+            to="/register"
+            className="rounded-md bg-[#0D47A1] px-4 py-2 text-[11px] font-semibold text-white shadow-sm hover:bg-[#093A85]"
           >
-            Find Software
-            <ArrowRight
-              size={14}
-              className="transition-transform duration-200 group-hover:translate-x-1"
-            />
+            Sign Up
           </Link>
-
-          {/* Mobile Menu */}
-
-          <button
-            type="button"
-            onClick={() => setMobileOpen((value) => !value)}
-            className="flex h-10 w-10 items-center justify-center border border-[#ddd7e7] bg-white text-[#403a4b] transition hover:border-[#cfc3e4] hover:bg-[#f9f7fc] lg:hidden"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileOpen}
-          >
-            {mobileOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </button>
         </div>
+
+        {/* Mobile */}
+        <button className="lg:hidden">
+          <Menu size={22} />
+        </button>
       </div>
-
-      {/* ================================================================
-          MOBILE MENU
-      ================================================================= */}
-
-      {mobileOpen && (
-        <div className="border-t border-[#e8e3ef] bg-white lg:hidden">
-          <div className="mx-auto max-w-[1280px] px-5 py-5 sm:px-8">
-            {/* Mobile Navigation */}
-
-            <nav className="border border-[#e3ddea] bg-[#faf9fc]">
-              {navItems.map((item, index) => (
-                <NavLink
-                  key={item.label}
-                  to={item.to}
-                  onClick={closeMobileMenu}
-                  className={({ isActive }) =>
-                    `flex items-center justify-between px-5 py-4 text-[13px] font-medium transition ${
-                      index !== navItems.length - 1
-                        ? "border-b border-[#e8e3ef]"
-                        : ""
-                    } ${
-                      isActive
-                        ? "bg-[#DEC8FE]/35 text-[#704FE6]"
-                        : "text-[#514b5b] hover:bg-white hover:text-[#704FE6]"
-                    }`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <span>{item.label}</span>
-
-                      {isActive && (
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#704FE6]" />
-                      )}
-                    </>
-                  )}
-                </NavLink>
-              ))}
-            </nav>
-
-            {/* Mobile Actions */}
-
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <Link
-                to="/login"
-                onClick={closeMobileMenu}
-                className="flex items-center justify-center border border-[#d9d2e4] px-4 py-3 text-[13px] font-semibold text-[#403a4b] transition hover:border-[#704FE6] hover:text-[#704FE6]"
-              >
-                Login
-              </Link>
-
-              <Link
-                to="/software-directory"
-                onClick={closeMobileMenu}
-                className="flex items-center justify-center gap-2 bg-[#704FE6] px-4 py-3 text-[13px] font-semibold text-white transition hover:bg-[#6F4FDE]"
-              >
-                Find Software
-                <ArrowRight size={14} />
-              </Link>
-            </div>
-
-            {/* Small Brand Accent */}
-
-            <div className="mt-5 flex items-center gap-1.5">
-              <span className="h-1 w-12 bg-[#704FE6]" />
-              <span className="h-1 w-6 bg-[#DEC8FE]" />
-              <span className="h-1 w-3 bg-[#FFD361]" />
-            </div>
-          </div>
-        </div>
-      )}
     </header>
   );
 }

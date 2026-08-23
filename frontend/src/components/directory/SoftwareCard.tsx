@@ -1,4 +1,4 @@
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight, Check, Heart, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import type { Software } from "../../types/software";
@@ -10,7 +10,7 @@ interface SoftwareCardProps {
 function SoftwareCard({ software }: SoftwareCardProps) {
   /*
   |--------------------------------------------------------------------------
-  | Rating
+  | RATING
   |--------------------------------------------------------------------------
   */
 
@@ -26,7 +26,7 @@ function SoftwareCard({ software }: SoftwareCardProps) {
 
   /*
   |--------------------------------------------------------------------------
-  | Reviews
+  | REVIEWS
   |--------------------------------------------------------------------------
   */
 
@@ -34,7 +34,7 @@ function SoftwareCard({ software }: SoftwareCardProps) {
 
   /*
   |--------------------------------------------------------------------------
-  | Pricing
+  | PRICING
   |--------------------------------------------------------------------------
   */
 
@@ -56,7 +56,7 @@ function SoftwareCard({ software }: SoftwareCardProps) {
 
   /*
   |--------------------------------------------------------------------------
-  | Category
+  | CATEGORY
   |--------------------------------------------------------------------------
   */
 
@@ -64,114 +64,454 @@ function SoftwareCard({ software }: SoftwareCardProps) {
 
   /*
   |--------------------------------------------------------------------------
-  | Description
+  | DESCRIPTION
   |--------------------------------------------------------------------------
   */
 
   const description =
-    software.description || "Temukan informasi lengkap mengenai software ini.";
+    software.description ||
+    "Discover detailed information about this software.";
 
   /*
   |--------------------------------------------------------------------------
-  | Render
+  | RENDER
   |--------------------------------------------------------------------------
   */
 
   return (
-    <article className="rounded border border-[#ddd9e3] bg-white p-6 transition hover:shadow-[0_8px_25px_rgba(30,20,70,0.06)]">
-      {/* Top */}
-      <div className="flex items-start justify-between">
-        {/* Logo */}
-        <div className="flex h-[68px] w-[68px] items-center justify-center overflow-hidden border border-[#e2dfe6] bg-white">
+    <article
+      className="
+        group
+        relative
+        rounded-xl
+        border
+        border-[#E2E7F0]
+        bg-white
+        transition-all
+        duration-200
+        hover:-translate-y-[1px]
+        hover:border-[#BFD0EA]
+        hover:shadow-[0_8px_24px_rgba(15,23,42,0.07)]
+      "
+    >
+      {/* ================================================================
+          FAVORITE
+      ================================================================= */}
+
+      <button
+        type="button"
+        aria-label={`Add ${software.name} to favorites`}
+        className="
+          absolute
+          right-3
+          top-3
+          z-10
+          flex
+          h-7
+          w-7
+          items-center
+          justify-center
+          rounded-full
+          text-[#94A3B8]
+          transition
+          hover:bg-[#F4F7FB]
+          hover:text-[#1749B8]
+        "
+      >
+        <Heart className="h-4 w-4" strokeWidth={1.7} />
+      </button>
+
+      {/* ================================================================
+          MAIN CARD
+      ================================================================= */}
+
+      <div
+        className="
+          flex
+          min-h-[155px]
+          flex-col
+          gap-5
+          p-5
+          md:flex-row
+          md:items-center
+        "
+      >
+        {/* ==============================================================
+            LOGO
+        ============================================================== */}
+
+        <div
+          className="
+            flex
+            h-16
+            w-16
+            shrink-0
+            items-center
+            justify-center
+            overflow-hidden
+            rounded-xl
+            border
+            border-[#E2E7F0]
+            bg-white
+            md:h-[68px]
+            md:w-[68px]
+          "
+        >
           {software.logo ? (
             <img
               src={software.logo}
               alt={`${software.name} logo`}
-              className="h-full w-full object-contain p-2"
+              className="
+                h-full
+                w-full
+                object-contain
+                p-3
+              "
             />
           ) : (
-            <div className="text-2xl font-bold text-[#6846e8]">
+            <span
+              className="
+                text-xl
+                font-bold
+                text-[#1749B8]
+              "
+            >
               {software.name.charAt(0).toUpperCase()}
-            </div>
+            </span>
           )}
         </div>
 
-        {/* Compare */}
-        <label className="flex cursor-pointer items-center gap-2 text-[13px] font-medium text-[#393445]">
-          <input
-            type="checkbox"
-            className="h-[18px] w-[18px] cursor-pointer appearance-none rounded border border-[#cfc9db] bg-white checked:border-[#6846e8] checked:bg-[#6846e8]"
-          />
+        {/* ==============================================================
+            SOFTWARE INFORMATION
+        ============================================================== */}
 
-          <span>Compare</span>
-        </label>
-      </div>
-
-      {/* Name */}
-      <h2 className="mt-5 text-[21px] font-semibold tracking-[-0.4px] text-[#171717]">
-        {software.name}
-      </h2>
-
-      {/* Category */}
-      <div className="mt-2 inline-flex bg-[#e7d7ff] px-2 py-1 text-[13px] font-medium text-[#6846e8]">
-        {categoryName}
-      </div>
-
-      {/* Rating */}
-      <div className="mt-3 flex items-start gap-3">
         <div
-          className="flex gap-0.5"
-          aria-label={
-            averageRating > 0
-              ? `${averageRating.toFixed(1)} out of 5 stars`
-              : "No ratings"
-          }
+          className="
+            min-w-0
+            flex-1
+            md:min-w-[280px]
+          "
         >
-          {Array.from({ length: 5 }).map((_, index) => (
-            <Star
-              key={index}
-              size={20}
-              strokeWidth={1.8}
-              className="text-[#f2b82b]"
-              fill={index < roundedRating ? "#f2b82b" : "none"}
-            />
-          ))}
+          {/* Name + Badge */}
+
+          <div className="flex flex-wrap items-center gap-2 pr-8">
+            <h2
+              className="
+                truncate
+                text-[16px]
+                font-bold
+                tracking-[-0.2px]
+                text-[#101B3D]
+              "
+            >
+              {software.name}
+            </h2>
+
+            <span
+              className="
+                rounded-full
+                bg-[#E9F8EF]
+                px-2
+                py-0.5
+                text-[9px]
+                font-semibold
+                text-[#159447]
+              "
+            >
+              Sponsored
+            </span>
+          </div>
+
+          {/* Rating */}
+
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div
+              className="flex items-center gap-0.5"
+              aria-label={
+                averageRating > 0
+                  ? `${averageRating.toFixed(1)} out of 5 stars`
+                  : "No ratings"
+              }
+            >
+              {Array.from({
+                length: 5,
+              }).map((_, index) => (
+                <Star
+                  key={index}
+                  className="h-[14px] w-[14px] text-[#F5A623]"
+                  strokeWidth={1.5}
+                  fill={index < roundedRating ? "currentColor" : "none"}
+                />
+              ))}
+            </div>
+
+            <span className="text-[12px] font-semibold text-[#26304C]">
+              {averageRating > 0 ? averageRating.toFixed(1) : "No rating"}
+            </span>
+
+            {reviewCount > 0 && (
+              <span className="text-[11px] text-[#4773C7]">
+                ({reviewCount.toLocaleString()} reviews)
+              </span>
+            )}
+          </div>
+
+          {/* Description */}
+
+          <p
+            className="
+              mt-2
+              line-clamp-2
+              max-w-[560px]
+              text-[11px]
+              leading-[1.7]
+              text-[#68728B]
+            "
+          >
+            {description}
+          </p>
+
+          {/* Tags */}
+
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            <span
+              className="
+                rounded-md
+                bg-[#F4F6FA]
+                px-2
+                py-1
+                text-[9px]
+                font-medium
+                text-[#59657D]
+              "
+            >
+              {categoryName}
+            </span>
+
+            <span
+              className="
+                rounded-md
+                bg-[#F4F6FA]
+                px-2
+                py-1
+                text-[9px]
+                font-medium
+                text-[#59657D]
+              "
+            >
+              Business Software
+            </span>
+
+            <span
+              className="
+                rounded-md
+                bg-[#F4F6FA]
+                px-2
+                py-1
+                text-[9px]
+                font-medium
+                text-[#59657D]
+              "
+            >
+              +2
+            </span>
+          </div>
         </div>
 
-        <span className="text-[14px] text-[#393445]">
-          {averageRating > 0
-            ? `${averageRating.toFixed(1)} (${reviewCount.toLocaleString()} reviews)`
-            : `No ratings (${reviewCount.toLocaleString()} reviews)`}
-        </span>
+        {/* ==============================================================
+            PRICING
+        ============================================================== */}
+
+        <div
+          className="
+            hidden
+            min-w-[125px]
+            shrink-0
+            border-l
+            border-[#EDF0F5]
+            pl-6
+            md:block
+          "
+        >
+          <p
+            className="
+              text-[10px]
+              font-medium
+              text-[#7A849B]
+            "
+          >
+            Starting from
+          </p>
+
+          <p
+            className="
+              mt-1
+              truncate
+              text-[19px]
+              font-bold
+              tracking-[-0.4px]
+              text-[#101B3D]
+            "
+          >
+            {pricingText}
+          </p>
+
+          <p
+            className="
+              mt-0.5
+              text-[10px]
+              text-[#7A849B]
+            "
+          >
+            /user / month
+          </p>
+        </div>
+
+        {/* ==============================================================
+            ACTIONS
+        ============================================================== */}
+
+        <div
+          className="
+            flex
+            w-full
+            shrink-0
+            flex-col
+            gap-2
+            md:w-[120px]
+          "
+        >
+          {/* View Details */}
+
+          <Link
+            to={`/software-directory/${software.slug}`}
+            className="
+              flex
+              h-9
+              items-center
+              justify-center
+              gap-1.5
+              rounded-lg
+              border
+              border-[#D7DFEC]
+              bg-white
+              px-3
+              text-[11px]
+              font-semibold
+              text-[#1749B8]
+              transition
+              hover:border-[#1749B8]
+              hover:bg-[#F7F9FD]
+            "
+          >
+            <span>View Details</span>
+
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+
+          {/* Compare */}
+
+          <button
+            type="button"
+            className="
+              flex
+              h-9
+              items-center
+              justify-center
+              rounded-lg
+              bg-[#1749B8]
+              px-3
+              text-[11px]
+              font-semibold
+              text-white
+              transition
+              hover:bg-[#103D9D]
+            "
+          >
+            Compare
+          </button>
+
+          {/* Checkbox */}
+
+          <label
+            className="
+              flex
+              cursor-pointer
+              items-center
+              justify-center
+              gap-2
+              text-[10px]
+              font-medium
+              text-[#68728B]
+            "
+          >
+            <span className="relative flex h-4 w-4 items-center justify-center">
+              <input
+                type="checkbox"
+                className="
+                  peer
+                  absolute
+                  inset-0
+                  z-10
+                  h-full
+                  w-full
+                  cursor-pointer
+                  appearance-none
+                  rounded
+                  border
+                  border-[#CBD5E1]
+                  bg-white
+                  transition
+                  checked:border-[#1749B8]
+                  checked:bg-[#1749B8]
+                "
+              />
+
+              <Check
+                size={10}
+                strokeWidth={3}
+                className="
+                  pointer-events-none
+                  relative
+                  z-20
+                  text-white
+                  opacity-0
+                  transition
+                  peer-checked:opacity-100
+                "
+              />
+            </span>
+
+            <span>Add to Compare</span>
+          </label>
+        </div>
       </div>
 
-      {/* Description */}
-      <p className="mt-5 min-h-[48px] text-[14px] leading-5 text-[#454052]">
-        {description}
-      </p>
+      {/* ================================================================
+          MOBILE PRICING
+      ================================================================= */}
 
-      <div className="my-5 border-t border-[#e3dfe6]" />
-
-      {/* Bottom */}
-      <div className="flex items-end justify-between gap-4">
-        {/* Pricing */}
+      <div
+        className="
+          flex
+          items-center
+          justify-between
+          border-t
+          border-[#EDF0F5]
+          px-5
+          py-3
+          md:hidden
+        "
+      >
         <div>
-          <p className="text-[13px] font-medium text-[#393445]">Starting at</p>
+          <p className="text-[9px] text-[#7A849B]">Starting from</p>
 
-          <p className="mt-1 text-[18px] font-semibold text-[#171717]">
+          <p className="mt-0.5 text-sm font-bold text-[#101B3D]">
             {pricingText}
           </p>
         </div>
 
-        {/* View Details */}
-        <Link
-          to={`/software-directory/${software.slug}`}
-          className="flex items-center gap-2 text-[14px] font-medium text-[#6846e8] transition hover:text-[#5132c5]"
-        >
-          <span>View Details</span>
-
-          <ArrowRight size={18} />
-        </Link>
+        <span className="text-[10px] text-[#7A849B]">/user / month</span>
       </div>
     </article>
   );
