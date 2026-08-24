@@ -18,7 +18,11 @@ import Vendors from "../pages/Vendors/index";
 
 import SoftwareDirectory from "../pages/SoftwareDirectory/SoftwareDirectory";
 import SoftwareDetail from "../pages/SoftwareDetail/SoftwareDetail";
-import SoftwareComparison from "../pages/SoftwareComparison/index";
+import SoftwareComparison from "../pages/SoftwareComparison/SoftwareComparison";
+
+// Recommendation
+import Recommendation from "../pages/Recommendation/Recommendation";
+import RecommendationResult from "../pages/RecommendationResult/RecommendationResult";
 
 function AppRoutes() {
   return (
@@ -40,6 +44,15 @@ function AppRoutes() {
 
         {/* Software Comparison */}
         <Route path="/software-comparison" element={<SoftwareComparison />} />
+
+        {/* Recommendation */}
+        <Route path="/recommendation" element={<Recommendation />} />
+
+        {/* Recommendation Result */}
+        <Route
+          path="/recommendation/result"
+          element={<RecommendationResult />}
+        />
 
         {/* ================================================================ */}
         {/* ADMIN */}

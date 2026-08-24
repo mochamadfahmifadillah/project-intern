@@ -1,13 +1,19 @@
-import { ArrowRight, Check, Heart, Star } from "lucide-react";
+import { ArrowRight, Heart, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import type { Software } from "../../types/software";
 
 interface SoftwareCardProps {
   software: Software;
+  isSelected?: boolean;
+  onToggleCompare?: (software: Software) => void;
 }
 
-function SoftwareCard({ software }: SoftwareCardProps) {
+function SoftwareCard({
+  software,
+  isSelected = false,
+  onToggleCompare,
+}: SoftwareCardProps) {
   /*
   |--------------------------------------------------------------------------
   | RATING
@@ -21,8 +27,6 @@ function SoftwareCard({ software }: SoftwareCardProps) {
       ? ratings.reduce((total, rating) => total + Number(rating.rating), 0) /
         ratings.length
       : 0;
-
-  const roundedRating = Math.round(averageRating);
 
   /*
   |--------------------------------------------------------------------------
@@ -49,8 +53,10 @@ function SoftwareCard({ software }: SoftwareCardProps) {
       firstPricing.price !== ""
     ) {
       pricingText = String(firstPricing.price);
-    } else if (firstPricing.name) {
-      pricingText = firstPricing.name;
+    } else if (firstPricing.description) {
+      pricingText = firstPricing.description;
+    } else if (firstPricing.pricing_type) {
+      pricingText = firstPricing.pricing_type;
     }
   }
 
@@ -74,26 +80,47 @@ function SoftwareCard({ software }: SoftwareCardProps) {
 
   /*
   |--------------------------------------------------------------------------
+  | COMPARE
+  |--------------------------------------------------------------------------
+  */
+
+  const handleCompare = () => {
+    if (!onToggleCompare) return;
+
+    onToggleCompare(software);
+  };
+
+  /*
+  |--------------------------------------------------------------------------
   | RENDER
   |--------------------------------------------------------------------------
   */
 
   return (
     <article
-      className="
+      className={`
         group
         relative
         rounded-xl
         border
-        border-[#E2E7F0]
         bg-white
         transition-all
         duration-200
-        hover:-translate-y-[1px]
-        hover:border-[#BFD0EA]
-        hover:shadow-[0_8px_24px_rgba(15,23,42,0.07)]
-      "
+        ${
+          isSelected
+            ? "border-[#1749B8] shadow-[0_0_0_1px_#1749B8,0_8px_24px_rgba(23,73,184,0.10)]"
+            : "border-[#E2E7F0] hover:-translate-y-[1px] hover:border-[#BFD0EA] hover:shadow-[0_8px_24px_rgba(15,23,42,0.07)]"
+        }
+      `}
     >
+      {/* ================================================================
+          SELECTED INDICATOR
+      ================================================================= */}
+
+      {isSelected && (
+        <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl bg-[#1749B8]" />
+      )}
+
       {/* ================================================================
           FAVORITE
       ================================================================= */}
@@ -192,7 +219,7 @@ function SoftwareCard({ software }: SoftwareCardProps) {
             md:min-w-[280px]
           "
         >
-          {/* Name + Badge */}
+          {/* Name */}
 
           <div className="flex flex-wrap items-center gap-2 pr-8">
             <h2
@@ -233,14 +260,14 @@ function SoftwareCard({ software }: SoftwareCardProps) {
                   : "No ratings"
               }
             >
-              {Array.from({
-                length: 5,
-              }).map((_, index) => (
+              {Array.from({ length: 5 }).map((_, index) => (
                 <Star
                   key={index}
                   className="h-[14px] w-[14px] text-[#F5A623]"
                   strokeWidth={1.5}
-                  fill={index < roundedRating ? "currentColor" : "none"}
+                  fill={
+                    index < Math.round(averageRating) ? "currentColor" : "none"
+                  }
                 />
               ))}
             </div>
@@ -301,20 +328,6 @@ function SoftwareCard({ software }: SoftwareCardProps) {
             >
               Business Software
             </span>
-
-            <span
-              className="
-                rounded-md
-                bg-[#F4F6FA]
-                px-2
-                py-1
-                text-[9px]
-                font-medium
-                text-[#59657D]
-              "
-            >
-              +2
-            </span>
           </div>
         </div>
 
@@ -333,13 +346,7 @@ function SoftwareCard({ software }: SoftwareCardProps) {
             md:block
           "
         >
-          <p
-            className="
-              text-[10px]
-              font-medium
-              text-[#7A849B]
-            "
-          >
+          <p className="text-[10px] font-medium text-[#7A849B]">
             Starting from
           </p>
 
@@ -356,15 +363,7 @@ function SoftwareCard({ software }: SoftwareCardProps) {
             {pricingText}
           </p>
 
-          <p
-            className="
-              mt-0.5
-              text-[10px]
-              text-[#7A849B]
-            "
-          >
-            /user / month
-          </p>
+          <p className="mt-0.5 text-[10px] text-[#7A849B]">/user / month</p>
         </div>
 
         {/* ==============================================================
@@ -413,27 +412,32 @@ function SoftwareCard({ software }: SoftwareCardProps) {
 
           <button
             type="button"
-            className="
+            onClick={handleCompare}
+            className={`
               flex
               h-9
               items-center
               justify-center
               rounded-lg
-              bg-[#1749B8]
               px-3
               text-[11px]
               font-semibold
-              text-white
               transition
-              hover:bg-[#103D9D]
-            "
+              ${
+                isSelected
+                  ? "bg-[#EAF1FF] text-[#1749B8] ring-1 ring-[#1749B8]"
+                  : "bg-[#1749B8] text-white hover:bg-[#103D9D]"
+              }
+            `}
           >
-            Compare
+            {isSelected ? "Selected" : "Compare"}
           </button>
 
           {/* Checkbox */}
 
-          <label
+          <button
+            type="button"
+            onClick={handleCompare}
             className="
               flex
               cursor-pointer
@@ -445,45 +449,38 @@ function SoftwareCard({ software }: SoftwareCardProps) {
               text-[#68728B]
             "
           >
-            <span className="relative flex h-4 w-4 items-center justify-center">
-              <input
-                type="checkbox"
-                className="
-                  peer
-                  absolute
-                  inset-0
-                  z-10
-                  h-full
-                  w-full
-                  cursor-pointer
-                  appearance-none
-                  rounded
-                  border
-                  border-[#CBD5E1]
-                  bg-white
-                  transition
-                  checked:border-[#1749B8]
-                  checked:bg-[#1749B8]
-                "
-              />
-
-              <Check
-                size={10}
-                strokeWidth={3}
-                className="
-                  pointer-events-none
-                  relative
-                  z-20
-                  text-white
-                  opacity-0
-                  transition
-                  peer-checked:opacity-100
-                "
-              />
+            <span
+              className={`
+                flex
+                h-4
+                w-4
+                items-center
+                justify-center
+                rounded
+                border
+                transition
+                ${
+                  isSelected
+                    ? "border-[#1749B8] bg-[#1749B8]"
+                    : "border-[#CBD5E1] bg-white"
+                }
+              `}
+            >
+              {isSelected && (
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path
+                    d="M2 5L4 7L8 3"
+                    stroke="white"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
             </span>
 
-            <span>Add to Compare</span>
-          </label>
+            <span>{isSelected ? "Added to Compare" : "Add to Compare"}</span>
+          </button>
         </div>
       </div>
 

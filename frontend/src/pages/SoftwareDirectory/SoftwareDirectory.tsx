@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, Grid2X2, List, SlidersHorizontal } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import Navbar from "../../components/landing/Navbar";
 import DirectoryFilters from "../../components/directory/DirectoryFilters";
@@ -17,9 +18,11 @@ import {
 function SoftwareDirectory() {
   /*
   |--------------------------------------------------------------------------
-  | State
+  | STATE
   |--------------------------------------------------------------------------
   */
+
+  const navigate = useNavigate();
 
   const [softwares, setSoftwares] = useState<Software[]>([]);
   const [categories, setCategories] = useState<SoftwareCategory[]>([]);
@@ -27,6 +30,9 @@ function SoftwareDirectory() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedPricing, setSelectedPricing] = useState("");
+  const [selectedBusinessSize, setSelectedBusinessSize] = useState("");
+
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -37,7 +43,17 @@ function SoftwareDirectory() {
 
   /*
   |--------------------------------------------------------------------------
-  | Load Categories
+  | COMPARE STATE
+  |--------------------------------------------------------------------------
+  */
+
+  const [compareSoftwares, setCompareSoftwares] = useState<Software[]>([]);
+
+  const MAX_COMPARE = 4;
+
+  /*
+  |--------------------------------------------------------------------------
+  | LOAD CATEGORIES
   |--------------------------------------------------------------------------
   */
 
@@ -51,7 +67,6 @@ function SoftwareDirectory() {
         setCategories(response.data);
       } catch (error) {
         console.error("Failed to load categories:", error);
-
         setCategories([]);
       } finally {
         setLoadingCategories(false);
@@ -63,7 +78,7 @@ function SoftwareDirectory() {
 
   /*
   |--------------------------------------------------------------------------
-  | Load Softwares
+  | LOAD SOFTWARES
   |--------------------------------------------------------------------------
   */
 
@@ -76,9 +91,6 @@ function SoftwareDirectory() {
         const response = await getPublicSoftwares({
           search: search || undefined,
           category: selectedCategory || undefined,
-
-          // Jangan dikirim kalau backend belum support.
-          // Pricing tetap dipakai untuk UI filter.
         });
 
         setSoftwares(response.data);
@@ -97,7 +109,7 @@ function SoftwareDirectory() {
 
   /*
   |--------------------------------------------------------------------------
-  | Category Change
+  | FILTER HANDLERS
   |--------------------------------------------------------------------------
   */
 
@@ -106,22 +118,15 @@ function SoftwareDirectory() {
     setCurrentPage(1);
   };
 
-  /*
-  |--------------------------------------------------------------------------
-  | Pricing Change
-  |--------------------------------------------------------------------------
-  */
-
   const handlePricingChange = (pricing: string) => {
     setSelectedPricing(pricing);
     setCurrentPage(1);
   };
 
-  /*
-  |--------------------------------------------------------------------------
-  | Search Change
-  |--------------------------------------------------------------------------
-  */
+  const handleBusinessSizeChange = (businessSize: string) => {
+    setSelectedBusinessSize(businessSize);
+    setCurrentPage(1);
+  };
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -130,7 +135,107 @@ function SoftwareDirectory() {
 
   /*
   |--------------------------------------------------------------------------
-  | Render
+  | CLEAR FILTERS
+  |--------------------------------------------------------------------------
+  */
+
+  const handleClearAllFilters = () => {
+    setSelectedCategory("");
+    setSelectedPricing("");
+    setSelectedBusinessSize("");
+    setCurrentPage(1);
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | COMPARE HANDLERS
+  |--------------------------------------------------------------------------
+  */
+
+  const handleToggleCompare = (software: Software) => {
+    setCompareSoftwares((current) => {
+      const alreadySelected = current.some((item) => item.id === software.id);
+
+      if (alreadySelected) {
+        return current.filter((item) => item.id !== software.id);
+      }
+
+      if (current.length >= MAX_COMPARE) {
+        return current;
+      }
+
+      return [...current, software];
+    });
+  };
+
+  const handleRemoveCompare = (softwareId: number | string) => {
+    setCompareSoftwares((current) =>
+      current.filter((item) => item.id !== softwareId),
+    );
+  };
+
+  const handleCompare = () => {
+    if (compareSoftwares.length < 2) {
+      return;
+    }
+
+    const slugs = compareSoftwares
+      .map((software) => software.slug)
+      .filter(Boolean);
+
+    if (slugs.length < 2) {
+      return;
+    }
+
+    navigate(
+      `/software-comparison?software=${encodeURIComponent(slugs.join(","))}`,
+    );
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | SELECTED SOFTWARE IDS
+  |--------------------------------------------------------------------------
+  */
+
+  const selectedCompareIds = useMemo(
+    () => compareSoftwares.map((software) => software.id),
+    [compareSoftwares],
+  );
+
+  /*
+  |--------------------------------------------------------------------------
+  | LABELS
+  |--------------------------------------------------------------------------
+  */
+
+  const selectedCategoryLabel =
+    categories.find((category) => category.slug === selectedCategory)?.name ||
+    selectedCategory;
+
+  const selectedPricingLabel =
+    selectedPricing === "free"
+      ? "Free"
+      : selectedPricing === "freemium"
+        ? "Freemium"
+        : selectedPricing === "paid"
+          ? "Paid"
+          : selectedPricing === "custom"
+            ? "Custom"
+            : selectedPricing;
+
+  const selectedBusinessSizeLabel =
+    selectedBusinessSize === "small"
+      ? "Small Business"
+      : selectedBusinessSize === "medium"
+        ? "Medium Business"
+        : selectedBusinessSize === "enterprise"
+          ? "Enterprise"
+          : selectedBusinessSize;
+
+  /*
+  |--------------------------------------------------------------------------
+  | RENDER
   |--------------------------------------------------------------------------
   */
 
@@ -166,7 +271,7 @@ function SoftwareDirectory() {
               PAGE HEADER
           ============================================================ */}
 
-          <div className="mb-6">
+          <div className="mb-5">
             <h1
               className="
                 text-[28px]
@@ -185,27 +290,80 @@ function SoftwareDirectory() {
           </div>
 
           {/* ============================================================
-              MAIN LAYOUT
-
-              IMPORTANT:
-              Sidebar = fixed width
-              Content = flex-1
-              Software cards = ONE COLUMN
+              SEARCH + SORT
           ============================================================ */}
 
           <div
             className="
+              mb-5
               flex
-              items-start
-              gap-5
-              lg:gap-6
+              w-full
+              flex-col
+              gap-3
+              sm:flex-row
+              sm:items-center
             "
           >
+            <div className="min-w-0 flex-1">
+              <DirectorySearch search={search} setSearch={handleSearchChange} />
+            </div>
+
+            <div className="flex h-[46px] shrink-0 items-center gap-2">
+              <span className="whitespace-nowrap text-[11px] text-[#7A849B]">
+                Sort by:
+              </span>
+
+              <div className="relative">
+                <select
+                  defaultValue="popular"
+                  className="
+                    h-[46px]
+                    w-[150px]
+                    appearance-none
+                    border
+                    border-[#D7DFEC]
+                    bg-white
+                    px-3
+                    pr-9
+                    text-[11px]
+                    font-medium
+                    text-[#475569]
+                    outline-none
+                    transition
+                    focus:border-[#1749B8]
+                  "
+                >
+                  <option value="popular">Most Popular</option>
+                  <option value="rating">Highest Rated</option>
+                  <option value="newest">Newest</option>
+                </select>
+
+                <ChevronDown
+                  size={15}
+                  strokeWidth={1.8}
+                  className="
+                    pointer-events-none
+                    absolute
+                    right-3
+                    top-1/2
+                    -translate-y-1/2
+                    text-[#64748B]
+                  "
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ============================================================
+              MAIN CONTENT
+          ============================================================ */}
+
+          <div className="flex items-start gap-5 lg:gap-6">
             {/* ========================================================
                 FILTER SIDEBAR
             ========================================================= */}
 
-            <div
+            <aside
               className="
                 hidden
                 w-[240px]
@@ -218,144 +376,30 @@ function SoftwareDirectory() {
                 categories={categories}
                 selectedCategory={selectedCategory}
                 selectedPricing={selectedPricing}
+                selectedBusinessSize={selectedBusinessSize}
                 onCategoryChange={handleCategoryChange}
                 onPricingChange={handlePricingChange}
+                onBusinessSizeChange={handleBusinessSizeChange}
                 loading={loadingCategories}
               />
-            </div>
+            </aside>
 
             {/* ========================================================
-                CONTENT
+                SOFTWARE CONTENT
             ========================================================= */}
 
             <section className="min-w-0 flex-1">
-              {/* ======================================================
-                  SEARCH + SORT
-              ====================================================== */}
-
-              <div
-                className="
-                  flex
-                  flex-col
-                  gap-3
-                  sm:flex-row
-                  sm:items-center
-                "
-              >
-                {/* Search */}
-
-                <div className="min-w-0 flex-1">
-                  <DirectorySearch
-                    search={search}
-                    setSearch={handleSearchChange}
-                  />
-                </div>
-
-                {/* Sort */}
-
-                <button
-                  type="button"
-                  className="
-                    flex
-                    h-[42px]
-                    shrink-0
-                    items-center
-                    justify-between
-                    gap-5
-                    rounded-lg
-                    border
-                    border-[#D7DFEC]
-                    bg-white
-                    px-4
-                    text-[11px]
-                    font-medium
-                    text-[#475569]
-                    transition
-                    hover:border-[#1749B8]
-                  "
-                >
-                  <span>Sort by</span>
-
-                  <span className="font-semibold text-[#101B3D]">
-                    Most Popular
-                  </span>
-
-                  <ChevronDown className="h-3.5 w-3.5" strokeWidth={1.8} />
-                </button>
-              </div>
-
-              {/* ======================================================
-                  ACTIVE FILTERS
-              ====================================================== */}
-
-              {(selectedCategory || selectedPricing) && (
-                <div
-                  className="
-                    mt-4
-                    flex
-                    flex-wrap
-                    items-center
-                    gap-2
-                  "
-                >
-                  <span className="text-[10px] font-medium text-[#7A849B]">
-                    Active filters:
-                  </span>
-
-                  {selectedCategory && (
-                    <button
-                      type="button"
-                      onClick={() => handleCategoryChange("")}
-                      className="
-                        rounded-full
-                        bg-[#EFF5FF]
-                        px-3
-                        py-1.5
-                        text-[10px]
-                        font-semibold
-                        text-[#1749B8]
-                      "
-                    >
-                      Category
-                      <span className="ml-1">×</span>
-                    </button>
-                  )}
-
-                  {selectedPricing && (
-                    <button
-                      type="button"
-                      onClick={() => handlePricingChange("")}
-                      className="
-                        rounded-full
-                        bg-[#EFF5FF]
-                        px-3
-                        py-1.5
-                        text-[10px]
-                        font-semibold
-                        text-[#1749B8]
-                      "
-                    >
-                      {selectedPricing}
-                      <span className="ml-1">×</span>
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* ======================================================
-                  MOBILE FILTER BUTTON
-              ====================================================== */}
+              {/* MOBILE FILTER */}
 
               <button
                 type="button"
                 className="
-                  mt-4
+                  mb-4
                   flex
                   w-full
                   items-center
                   justify-center
                   gap-2
-                  rounded-lg
                   border
                   border-[#D7DFEC]
                   bg-white
@@ -372,20 +416,162 @@ function SoftwareDirectory() {
               </button>
 
               {/* ======================================================
-                  RESULT COUNT
+                  FILTER SUMMARY
               ====================================================== */}
 
               <div
                 className="
-                  mt-5
+                  mb-4
                   flex
+                  min-h-[40px]
                   items-center
                   justify-between
+                  gap-4
                   border-b
                   border-[#EEF2F7]
                   pb-3
                 "
               >
+                <div
+                  className="
+                    flex
+                    min-w-0
+                    flex-1
+                    flex-wrap
+                    items-center
+                    gap-x-5
+                    gap-y-2
+                  "
+                >
+                  {selectedPricing && (
+                    <div className="flex items-center gap-1.5 whitespace-nowrap">
+                      <span className="text-[11px] font-medium text-[#7A849B]">
+                        Pricing:
+                      </span>
+
+                      <span className="text-[11px] font-semibold text-[#172554]">
+                        {selectedPricingLabel}
+                      </span>
+                    </div>
+                  )}
+
+                  {selectedCategory && (
+                    <div className="flex items-center gap-1.5 whitespace-nowrap">
+                      <span className="text-[11px] font-medium text-[#7A849B]">
+                        Category:
+                      </span>
+
+                      <span className="text-[11px] font-semibold text-[#172554]">
+                        {selectedCategoryLabel}
+                      </span>
+                    </div>
+                  )}
+
+                  {selectedBusinessSize && (
+                    <div className="flex items-center gap-1.5 whitespace-nowrap">
+                      <span className="text-[11px] font-medium text-[#7A849B]">
+                        Business Size:
+                      </span>
+
+                      <span className="text-[11px] font-semibold text-[#172554]">
+                        {selectedBusinessSizeLabel}
+                      </span>
+                    </div>
+                  )}
+
+                  {!selectedPricing &&
+                    !selectedCategory &&
+                    !selectedBusinessSize && (
+                      <span className="text-[11px] text-[#94A3B8]">
+                        All software
+                      </span>
+                    )}
+                </div>
+
+                <div className="flex shrink-0 items-center gap-4">
+                  {(selectedPricing ||
+                    selectedCategory ||
+                    selectedBusinessSize) && (
+                    <button
+                      type="button"
+                      onClick={handleClearAllFilters}
+                      className="
+                        whitespace-nowrap
+                        text-[11px]
+                        font-semibold
+                        text-[#1749B8]
+                        transition-colors
+                        hover:text-[#0D47A1]
+                      "
+                    >
+                      Clear all
+                    </button>
+                  )}
+
+                  {/* VIEW TOGGLE */}
+
+                  <div
+                    className="
+                      flex
+                      h-[34px]
+                      items-center
+                      border
+                      border-[#D7DFEC]
+                      bg-white
+                    "
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("grid")}
+                      aria-label="Grid view"
+                      className={`
+                        flex
+                        h-full
+                        w-[34px]
+                        items-center
+                        justify-center
+                        border-r
+                        border-[#D7DFEC]
+                        transition-colors
+                        ${
+                          viewMode === "grid"
+                            ? "bg-[#EFF5FF] text-[#1749B8]"
+                            : "text-[#94A3B8] hover:bg-[#F8FAFC] hover:text-[#475569]"
+                        }
+                      `}
+                    >
+                      <Grid2X2 size={15} strokeWidth={1.8} />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("list")}
+                      aria-label="List view"
+                      className={`
+                        flex
+                        h-full
+                        w-[34px]
+                        items-center
+                        justify-center
+                        transition-colors
+                        ${
+                          viewMode === "list"
+                            ? "bg-[#EFF5FF] text-[#1749B8]"
+                            : "text-[#94A3B8] hover:bg-[#F8FAFC] hover:text-[#475569]"
+                        }
+                      `}
+                    >
+                      <List size={16} strokeWidth={1.8} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* ======================================================
+                  RESULT COUNT
+              ====================================================== */}
+
+              <div className="mb-4 flex items-center justify-between">
                 <p className="text-[11px] text-[#7A849B]">
                   {loadingSoftwares
                     ? "Loading software..."
@@ -393,71 +579,71 @@ function SoftwareDirectory() {
                 </p>
 
                 <div className="text-[10px] text-[#94A3B8]">
-                  Showing results
+                  {compareSoftwares.length > 0
+                    ? `${compareSoftwares.length}/${MAX_COMPARE} selected`
+                    : "Showing results"}
                 </div>
               </div>
 
               {/* ======================================================
-                  SOFTWARE LIST
-
-                  IMPORTANT:
-                  JANGAN pakai grid-cols-2 di sini.
+                  SOFTWARE LIST / GRID
               ====================================================== */}
 
-              <div className="mt-4 space-y-3.5">
-                {/* Loading */}
+              <div
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 gap-4 xl:grid-cols-2"
+                    : "space-y-3.5"
+                }
+              >
+                {/* LOADING */}
 
-                {loadingSoftwares && (
-                  <>
-                    {Array.from({
-                      length: 4,
-                    }).map((_, index) => (
-                      <div
-                        key={index}
-                        className="
-                          h-[190px]
-                          animate-pulse
-                          rounded-xl
-                          border
-                          border-[#E2E7F0]
-                          bg-[#F8FAFC]
-                        "
-                      />
-                    ))}
-                  </>
-                )}
+                {loadingSoftwares &&
+                  Array.from({ length: 4 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="
+                        h-[190px]
+                        animate-pulse
+                        rounded-xl
+                        border
+                        border-[#E2E7F0]
+                        bg-[#F8FAFC]
+                      "
+                    />
+                  ))}
 
-                {/* Error */}
+                {/* ERROR */}
 
                 {!loadingSoftwares && error && (
                   <div
                     className="
-                        rounded-xl
-                        border
-                        border-red-200
-                        bg-red-50
-                        px-6
-                        py-12
-                        text-center
-                      "
+                      col-span-full
+                      border
+                      border-red-200
+                      bg-red-50
+                      px-6
+                      py-12
+                      text-center
+                    "
                   >
                     <p className="text-sm font-medium text-red-600">{error}</p>
                   </div>
                 )}
 
-                {/* Empty */}
+                {/* EMPTY */}
 
                 {!loadingSoftwares && !error && softwares.length === 0 && (
                   <div
                     className="
-                        rounded-xl
-                        border
-                        border-[#E2E7F0]
-                        bg-white
-                        px-6
-                        py-14
-                        text-center
-                      "
+                      col-span-full
+                      border
+                      border-[#E2E7F0]
+                      bg-white
+                      px-6
+                      py-14
+                      text-center
+                    "
                   >
                     <p className="text-sm font-semibold text-[#101B3D]">
                       No software found
@@ -469,18 +655,21 @@ function SoftwareDirectory() {
                   </div>
                 )}
 
-                {/* Software */}
+                {/* SOFTWARE */}
 
                 {!loadingSoftwares &&
                   !error &&
                   softwares.map((software) => (
-                    <SoftwareCard key={software.id} software={software} />
+                    <SoftwareCard
+                      key={software.id}
+                      software={software}
+                      isCompared={selectedCompareIds.includes(software.id)}
+                      onToggleCompare={handleToggleCompare}
+                    />
                   ))}
               </div>
 
-              {/* ======================================================
-                  PAGINATION
-              ====================================================== */}
+              {/* PAGINATION */}
 
               {!loadingSoftwares && !error && softwares.length > 0 && (
                 <div className="mt-6">
@@ -495,6 +684,123 @@ function SoftwareDirectory() {
           </div>
         </div>
       </main>
+
+      {/* ================================================================
+          COMPARE BAR
+      ================================================================= */}
+
+      {compareSoftwares.length > 0 && (
+        <div
+          className="
+            fixed
+            inset-x-0
+            bottom-0
+            z-50
+            border-t
+            border-[#DCE3EF]
+            bg-white
+            shadow-[0_-8px_30px_rgba(15,23,42,0.10)]
+          "
+        >
+          <div
+            className="
+              mx-auto
+              flex
+              max-w-[1400px]
+              flex-col
+              gap-3
+              px-5
+              py-3
+              sm:px-6
+              lg:flex-row
+              lg:items-center
+              lg:justify-between
+              lg:px-8
+              xl:px-10
+            "
+          >
+            {/* SELECTED */}
+
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] font-bold text-[#101B3D]">
+                  Compare Software
+                </span>
+
+                <span
+                  className="
+                    rounded-full
+                    bg-[#EFF5FF]
+                    px-2
+                    py-0.5
+                    text-[10px]
+                    font-semibold
+                    text-[#1749B8]
+                  "
+                >
+                  {compareSoftwares.length}/{MAX_COMPARE}
+                </span>
+              </div>
+
+              <div className="mt-1 flex flex-wrap gap-2">
+                {compareSoftwares.map((software) => (
+                  <button
+                    key={software.id}
+                    type="button"
+                    onClick={() => handleRemoveCompare(software.id)}
+                    className="
+                      rounded-md
+                      border
+                      border-[#DCE3EF]
+                      bg-[#F8FAFC]
+                      px-2
+                      py-1
+                      text-[10px]
+                      font-medium
+                      text-[#475569]
+                      transition
+                      hover:border-red-200
+                      hover:bg-red-50
+                      hover:text-red-600
+                    "
+                  >
+                    {software.name} ×
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* ACTION */}
+
+            <button
+              type="button"
+              disabled={compareSoftwares.length < 2}
+              onClick={handleCompare}
+              className="
+                flex
+                h-10
+                shrink-0
+                items-center
+                justify-center
+                gap-2
+                rounded-lg
+                bg-[#1749B8]
+                px-5
+                text-[11px]
+                font-semibold
+                text-white
+                transition
+                hover:bg-[#103D9D]
+                disabled:cursor-not-allowed
+                disabled:bg-[#CBD5E1]
+              "
+            >
+              Compare
+              <span>→</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

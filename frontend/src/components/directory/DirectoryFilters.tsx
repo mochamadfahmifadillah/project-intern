@@ -5,8 +5,10 @@ interface DirectoryFiltersProps {
   categories: SoftwareCategory[];
   selectedCategory: string;
   selectedPricing: string;
+  selectedBusinessSize: string;
   onCategoryChange: (category: string) => void;
   onPricingChange: (pricing: string) => void;
+  onBusinessSizeChange: (businessSize: string) => void;
   loading?: boolean;
 }
 
@@ -34,12 +36,34 @@ const pricingOptions: PricingOption[] = [
   },
 ];
 
+interface BusinessSizeOption {
+  value: string;
+  label: string;
+}
+
+const businessSizeOptions: BusinessSizeOption[] = [
+  {
+    value: "small",
+    label: "Small Business",
+  },
+  {
+    value: "medium",
+    label: "Medium Business",
+  },
+  {
+    value: "enterprise",
+    label: "Enterprise",
+  },
+];
+
 function DirectoryFilters({
   categories,
   selectedCategory,
   selectedPricing,
+  selectedBusinessSize,
   onCategoryChange,
   onPricingChange,
+  onBusinessSizeChange,
   loading = false,
 }: DirectoryFiltersProps) {
   /*
@@ -51,6 +75,7 @@ function DirectoryFilters({
   const handleClearAll = () => {
     onCategoryChange("");
     onPricingChange("");
+    onBusinessSizeChange("");
   };
 
   /*
@@ -378,8 +403,170 @@ function DirectoryFilters({
                   )}
                 </span>
 
-                <span className="text-[11px] text-[#475569] transition-colors group-hover:text-[#0F172A]">
+                <span
+                  className="
+                    text-[11px]
+                    text-[#475569]
+                    transition-colors
+                    group-hover:text-[#0F172A]
+                  "
+                >
                   {pricing.label}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="mx-4 border-t border-[#EEF2F7]" />
+
+      {/* ================================================================
+          BUSINESS SIZE
+      ================================================================= */}
+
+      <section className="px-4 py-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-[12px] font-bold text-[#172554]">
+            Business Size
+          </h3>
+
+          <ChevronUp size={15} strokeWidth={1.8} className="text-[#64748B]" />
+        </div>
+
+        <div className="mt-3 space-y-2.5">
+          {/* All Business Sizes */}
+
+          <label className="group flex cursor-pointer items-center gap-2.5">
+            <input
+              type="radio"
+              name="business-size"
+              value=""
+              checked={selectedBusinessSize === ""}
+              onChange={() => onBusinessSizeChange("")}
+              className="peer sr-only"
+            />
+
+            <span
+              className="
+                flex
+                h-[15px]
+                w-[15px]
+                shrink-0
+                items-center
+                justify-center
+                rounded-[3px]
+                border
+                border-[#CBD5E1]
+                bg-white
+                transition-all
+                peer-checked:border-[#0D47A1]
+                peer-checked:bg-[#0D47A1]
+              "
+            >
+              {selectedBusinessSize === "" && (
+                <svg
+                  viewBox="0 0 12 12"
+                  className="h-2.5 w-2.5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    d="M2 6l2.5 2.5L10 3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </span>
+
+            <span className="text-[11px] text-[#475569]">
+              All Business Sizes
+            </span>
+          </label>
+
+          {/* Business Size Options */}
+
+          {[
+            {
+              value: "small",
+              label: "Small Business",
+            },
+            {
+              value: "medium",
+              label: "Medium Business",
+            },
+            {
+              value: "enterprise",
+              label: "Enterprise",
+            },
+          ].map((businessSize) => {
+            const isSelected = selectedBusinessSize === businessSize.value;
+
+            return (
+              <label
+                key={businessSize.value}
+                className="
+                  group
+                  flex
+                  cursor-pointer
+                  items-center
+                  gap-2.5
+                "
+              >
+                <input
+                  type="radio"
+                  name="business-size"
+                  value={businessSize.value}
+                  checked={isSelected}
+                  onChange={() => onBusinessSizeChange(businessSize.value)}
+                  className="peer sr-only"
+                />
+
+                <span
+                  className="
+                    flex
+                    h-[15px]
+                    w-[15px]
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-[3px]
+                    border
+                    border-[#CBD5E1]
+                    bg-white
+                    transition-all
+                    peer-checked:border-[#0D47A1]
+                    peer-checked:bg-[#0D47A1]
+                  "
+                >
+                  {isSelected && (
+                    <svg
+                      viewBox="0 0 12 12"
+                      className="h-2.5 w-2.5 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path
+                        d="M2 6l2.5 2.5L10 3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </span>
+
+                <span
+                  className="
+                    text-[11px]
+                    text-[#475569]
+                    transition-colors
+                    group-hover:text-[#0F172A]
+                  "
+                >
+                  {businessSize.label}
                 </span>
               </label>
             );

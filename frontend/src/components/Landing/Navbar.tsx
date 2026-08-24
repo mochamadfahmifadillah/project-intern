@@ -40,14 +40,14 @@ function Navbar() {
           </Link>
 
           <Link
-            to="/compare"
+            to="/software-comparison"
             className="text-[11px] font-medium text-[#17233C] hover:text-[#0D47A1]"
           >
             Compare
           </Link>
 
           <Link
-            to="/recommend"
+            to="/recommendation"
             className="text-[11px] font-medium text-[#17233C] hover:text-[#0D47A1]"
           >
             Recommend
