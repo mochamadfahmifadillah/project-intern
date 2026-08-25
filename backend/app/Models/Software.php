@@ -16,6 +16,7 @@ class Software extends Model
 
     protected $fillable = [
         'category_id',
+        'vendor_id',
         'name',
         'slug',
         'description',
@@ -98,6 +99,17 @@ class Software extends Model
         return $this->hasMany(
             SoftwareRating::class,
             'software_id'
+        );
+    }
+
+        /**
+     * Software Vendor
+     */
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(
+            Vendor::class,
+            'vendor_id'
         );
     }
 

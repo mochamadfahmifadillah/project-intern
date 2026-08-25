@@ -10,6 +10,8 @@ class SavedSoftware extends Model
 {
     use HasFactory;
 
+    protected $table = 'saved_softwares';
+
     protected $fillable = [
         'user_id',
         'software_id',

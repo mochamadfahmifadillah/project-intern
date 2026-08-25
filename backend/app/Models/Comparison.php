@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Comparison extends Model
@@ -13,6 +14,7 @@ class Comparison extends Model
 
     protected $fillable = [
         'user_id',
+        'session_key',
     ];
 
     /**
@@ -27,7 +29,7 @@ class Comparison extends Model
     }
 
     /**
-     * Software yang terdapat dalam comparison.
+     * Item dalam comparison.
      */
     public function items(): HasMany
     {
@@ -35,5 +37,18 @@ class Comparison extends Model
             ComparisonItem::class,
             'comparison_id'
         );
+    }
+
+    /**
+     * Software yang dibandingkan.
+     */
+    public function softwares(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Software::class,
+            'comparison_items',
+            'comparison_id',
+            'software_id'
+        )->withPivot('position');
     }
 }

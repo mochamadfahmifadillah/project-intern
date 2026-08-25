@@ -189,8 +189,41 @@ export interface Software {
 |--------------------------------------------------------------------------
 */
 
+export interface SoftwareComparisonVendor {
+  id: number;
+  name: string;
+  description: string | null;
+  website_url: string | null;
+  logo: string | null;
+}
+
+export interface SoftwareComparisonFeature {
+  id: number;
+  name: string;
+  description: string | null;
+}
+
+export interface SoftwareComparisonPricing {
+  id: number;
+  name: string | null;
+  price: number | string | null;
+  description: string | null;
+}
+
+export interface SoftwareComparisonIntegration {
+  id: number;
+  name: string;
+  description: string | null;
+}
+
+export interface SoftwareComparisonRating {
+  average_rating: number;
+  total_ratings: number;
+}
+
 export interface SoftwareComparisonItem {
   id: number;
+  category_id: number;
 
   name: string;
   slug: string;
@@ -201,17 +234,19 @@ export interface SoftwareComparisonItem {
 
   logo: string | null;
 
-  category?: SoftwareCategory;
+  status: "active" | "inactive";
 
-  features?: SoftwareFeature[];
+  category: SoftwareCategory | null;
 
-  pricings?: SoftwarePricing[];
+  vendor: SoftwareComparisonVendor | null;
 
-  integrations?: SoftwareIntegration[];
+  features: SoftwareComparisonFeature[];
 
-  average_rating?: number;
+  pricings: SoftwareComparisonPricing[];
 
-  total_ratings?: number;
+  integrations: SoftwareComparisonIntegration[];
+
+  rating: SoftwareComparisonRating;
 }
 
 /*
@@ -639,9 +674,7 @@ export const updateSoftwareReview = async (
 export const deleteSoftwareReview = async (
   id: number,
 ): Promise<MessageResponse> => {
-  const response = await api.delete<MessageResponse>(
-    `/software-reviews/${id}`,
-  );
+  const response = await api.delete<MessageResponse>(`/software-reviews/${id}`);
 
   return response.data;
 };
@@ -711,9 +744,7 @@ export const updateSoftwareRating = async (
 export const deleteSoftwareRating = async (
   id: number,
 ): Promise<MessageResponse> => {
-  const response = await api.delete<MessageResponse>(
-    `/software-ratings/${id}`,
-  );
+  const response = await api.delete<MessageResponse>(`/software-ratings/${id}`);
 
   return response.data;
 };
@@ -730,9 +761,7 @@ export const deleteSoftwareRating = async (
 export const getSoftwareComparison = async (
   softwareSlugs: string[],
 ): Promise<SoftwareComparisonResponse> => {
-  const cleanedSlugs = softwareSlugs
-    .map((slug) => slug.trim())
-    .filter(Boolean);
+  const cleanedSlugs = softwareSlugs.map((slug) => slug.trim()).filter(Boolean);
 
   if (cleanedSlugs.length < 2) {
     throw new Error("Minimal pilih 2 software untuk dibandingkan.");
@@ -806,9 +835,7 @@ export const updateSoftware = async (
 |--------------------------------------------------------------------------
 */
 
-export const deleteSoftware = async (
-  id: number,
-): Promise<MessageResponse> => {
+export const deleteSoftware = async (id: number): Promise<MessageResponse> => {
   const response = await api.delete<MessageResponse>(`/softwares/${id}`);
 
   return response.data;
@@ -844,9 +871,7 @@ export const createRecommendation = async (
   const cleanedData = Object.fromEntries(
     Object.entries(data).filter(
       ([, value]) =>
-        value !== undefined &&
-        value !== null &&
-        String(value).trim() !== "",
+        value !== undefined && value !== null && String(value).trim() !== "",
     ),
   ) as RecommendationPayload;
 
@@ -857,9 +882,7 @@ export const createRecommendation = async (
   */
 
   if (Object.keys(cleanedData).length === 0) {
-    throw new Error(
-      "Minimal satu kriteria recommendation harus diisi.",
-    );
+    throw new Error("Minimal satu kriteria recommendation harus diisi.");
   }
 
   /*

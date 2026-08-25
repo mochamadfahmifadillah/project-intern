@@ -11,7 +11,7 @@ class SoftwareComparisonController extends Controller
     /**
      * Compare multiple softwares.
      *
-     * GET /api/software-comparison?software[]=figma&software[]=canva
+     * GET /api/v1/software-comparison?software[]=figma&software[]=canva
      *
      * Maximum 3 softwares.
      */
@@ -54,6 +54,7 @@ class SoftwareComparisonController extends Controller
 
         $softwares = Software::with([
             'category',
+            'vendor',
             'features',
             'pricings',
             'integrations',
@@ -70,6 +71,7 @@ class SoftwareComparisonController extends Controller
 
         if ($softwares->count() !== count($slugs)) {
             return response()->json([
+                'success' => false,
                 'message' => 'Salah satu software tidak ditemukan atau tidak aktif.',
             ], 404);
         }
@@ -82,6 +84,12 @@ class SoftwareComparisonController extends Controller
 
         $data = $softwares->map(function ($software) {
 
+            /*
+            |--------------------------------------------------------------------------
+            | Rating
+            |--------------------------------------------------------------------------
+            */
+
             $ratingQuery = SoftwareRating::where(
                 'software_id',
                 $software->id
@@ -92,6 +100,12 @@ class SoftwareComparisonController extends Controller
             $averageRating = $totalRatings > 0
                 ? round($ratingQuery->avg('rating'), 1)
                 : 0;
+
+            /*
+            |--------------------------------------------------------------------------
+            | Response Data
+            |--------------------------------------------------------------------------
+            */
 
             return [
                 'id' => $software->id,
@@ -119,17 +133,35 @@ class SoftwareComparisonController extends Controller
 
                 /*
                 |--------------------------------------------------------------------------
+                | Vendor
+                |--------------------------------------------------------------------------
+                */
+
+                'vendor' => $software->vendor
+                    ? [
+                        'id' => $software->vendor->id,
+                        'name' => $software->vendor->name,
+                        'description' => $software->vendor->description,
+                        'website_url' => $software->vendor->website_url,
+                        'logo' => $software->vendor->logo,
+                    ]
+                    : null,
+
+                /*
+                |--------------------------------------------------------------------------
                 | Features
                 |--------------------------------------------------------------------------
                 */
 
-                'features' => $software->features->map(function ($feature) {
-                    return [
-                        'id' => $feature->id,
-                        'name' => $feature->name,
-                        'description' => $feature->description,
-                    ];
-                })->values(),
+                'features' => $software->features
+                    ->map(function ($feature) {
+                        return [
+                            'id' => $feature->id,
+                            'name' => $feature->name,
+                            'description' => $feature->description,
+                        ];
+                    })
+                    ->values(),
 
                 /*
                 |--------------------------------------------------------------------------
@@ -137,14 +169,16 @@ class SoftwareComparisonController extends Controller
                 |--------------------------------------------------------------------------
                 */
 
-                'pricings' => $software->pricings->map(function ($pricing) {
-                    return [
-                        'id' => $pricing->id,
-                        'name' => $pricing->name,
-                        'price' => $pricing->price,
-                        'description' => $pricing->description,
-                    ];
-                })->values(),
+                'pricings' => $software->pricings
+                    ->map(function ($pricing) {
+                        return [
+                            'id' => $pricing->id,
+                            'name' => $pricing->name,
+                            'price' => $pricing->price,
+                            'description' => $pricing->description,
+                        ];
+                    })
+                    ->values(),
 
                 /*
                 |--------------------------------------------------------------------------
@@ -152,13 +186,15 @@ class SoftwareComparisonController extends Controller
                 |--------------------------------------------------------------------------
                 */
 
-                'integrations' => $software->integrations->map(function ($integration) {
-                    return [
-                        'id' => $integration->id,
-                        'name' => $integration->name,
-                        'description' => $integration->description,
-                    ];
-                })->values(),
+                'integrations' => $software->integrations
+                    ->map(function ($integration) {
+                        return [
+                            'id' => $integration->id,
+                            'name' => $integration->name,
+                            'description' => $integration->description,
+                        ];
+                    })
+                    ->values(),
 
                 /*
                 |--------------------------------------------------------------------------
@@ -180,6 +216,7 @@ class SoftwareComparisonController extends Controller
         */
 
         return response()->json([
+            'success' => true,
             'message' => 'Software comparison berhasil diambil.',
             'data' => $data,
         ]);

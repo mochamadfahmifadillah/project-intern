@@ -14,6 +14,7 @@ use App\Http\Controllers\SoftwareIntegrationController;
 use App\Http\Controllers\SoftwarePricingController;
 use App\Http\Controllers\SoftwareRatingController;
 use App\Http\Controllers\SoftwareReviewController;
+use App\Http\Controllers\SavedSoftwareController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VendorController;
 use Illuminate\Support\Facades\Route;
@@ -143,9 +144,9 @@ Route::prefix('v1')->group(function () {
     |
     */
 
-    Route::get('/software-comparison', [
-        SoftwareComparisonController::class,
-        'compare',
+   Route::get('/software-comparison', [
+    SoftwareComparisonController::class,
+    'index',
     ]);
 
     /*
@@ -585,6 +586,32 @@ Route::prefix('v1')->group(function () {
             'destroy',
         ])->middleware('permission:software-integrations.delete');
 
+
+                /*
+        |--------------------------------------------------------------------------
+        | Saved Software
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/saved-softwares', [
+            SavedSoftwareController::class,
+            'index',
+        ]);
+
+        Route::post('/saved-softwares/{software}', [
+            SavedSoftwareController::class,
+            'store',
+        ]);
+
+        Route::delete('/saved-softwares/{software}', [
+            SavedSoftwareController::class,
+            'destroy',
+        ]);
+
+        Route::get('/saved-softwares/{software}/check', [
+            SavedSoftwareController::class,
+            'check',
+        ]);
         /*
         |--------------------------------------------------------------------------
         | Vendor Management
