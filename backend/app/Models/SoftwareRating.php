@@ -18,12 +18,13 @@ class SoftwareRating extends Model
         'rating',
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Software
-    |--------------------------------------------------------------------------
-    */
+    protected $casts = [
+        'rating' => 'integer',
+    ];
 
+    /**
+     * Software yang diberi rating.
+     */
     public function software(): BelongsTo
     {
         return $this->belongsTo(
@@ -32,12 +33,9 @@ class SoftwareRating extends Model
         );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | User
-    |--------------------------------------------------------------------------
-    */
-
+    /**
+     * User yang memberikan rating.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(

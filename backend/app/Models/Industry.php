@@ -6,20 +6,26 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Permission extends Model
+class Industry extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'name',
+        'slug',
         'description',
     ];
 
     /**
-     * Roles that have this permission.
+     * Software yang termasuk dalam industry ini.
      */
-    public function roles(): BelongsToMany
+    public function softwares(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class);
+        return $this->belongsToMany(
+            Software::class,
+            'industry_software',
+            'industry_id',
+            'software_id'
+        );
     }
 }

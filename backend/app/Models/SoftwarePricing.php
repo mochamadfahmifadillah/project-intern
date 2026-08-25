@@ -12,10 +12,8 @@ class SoftwarePricing extends Model
 
     protected $fillable = [
         'software_id',
-        'pricing_type',
+        'pricing_model_id',
         'price',
-        'currency',
-        'billing_period',
         'description',
     ];
 
@@ -23,8 +21,25 @@ class SoftwarePricing extends Model
         'price' => 'decimal:2',
     ];
 
+    /**
+     * Software yang memiliki pricing ini.
+     */
     public function software(): BelongsTo
     {
-        return $this->belongsTo(Software::class);
+        return $this->belongsTo(
+            Software::class,
+            'software_id'
+        );
+    }
+
+    /**
+     * Pricing model yang digunakan.
+     */
+    public function pricingModel(): BelongsTo
+    {
+        return $this->belongsTo(
+            PricingModel::class,
+            'pricing_model_id'
+        );
     }
 }

@@ -6,31 +6,33 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class SoftwareIntegration extends Model
+class Content extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'software_id',
-        'name',
+        'title',
+        'slug',
+        'excerpt',
+        'content',
         'type',
-        'description',
-        'website_url',
-        'is_active',
+        'status',
+        'author_id',
+        'published_at',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'published_at' => 'datetime',
     ];
 
     /**
-     * Software yang memiliki integration ini.
+     * Author / admin yang membuat content.
      */
-    public function software(): BelongsTo
+    public function author(): BelongsTo
     {
         return $this->belongsTo(
-            Software::class,
-            'software_id'
+            User::class,
+            'author_id'
         );
     }
 }

@@ -6,38 +6,40 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class SoftwareReview extends Model
+class ImplementationRequest extends Model
 {
     use HasFactory;
 
-    protected $table = 'software_reviews';
-
     protected $fillable = [
-        'software_id',
         'user_id',
-        'review',
+        'company_name',
+        'contact_name',
+        'email',
+        'phone',
+        'project_requirement',
         'status',
+        'assigned_to',
     ];
 
     /**
-     * Software yang direview.
-     */
-    public function software(): BelongsTo
-    {
-        return $this->belongsTo(
-            Software::class,
-            'software_id'
-        );
-    }
-
-    /**
-     * User yang membuat review.
+     * User yang membuat implementation request.
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(
             User::class,
             'user_id'
+        );
+    }
+
+    /**
+     * Admin yang menangani lead.
+     */
+    public function assignedTo(): BelongsTo
+    {
+        return $this->belongsTo(
+            User::class,
+            'assigned_to'
         );
     }
 }

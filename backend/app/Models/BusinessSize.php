@@ -4,25 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class SoftwareFeature extends Model
+class BusinessSize extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'software_id',
         'name',
+        'slug',
         'description',
     ];
 
     /**
-     * Software yang memiliki feature ini.
+     * Software yang cocok dengan business size ini.
      */
-    public function software(): BelongsTo
+    public function softwares(): BelongsToMany
     {
-        return $this->belongsTo(
+        return $this->belongsToMany(
             Software::class,
+            'business_size_software',
+            'business_size_id',
             'software_id'
         );
     }

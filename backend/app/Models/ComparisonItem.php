@@ -6,38 +6,34 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class SoftwareReview extends Model
+class ComparisonItem extends Model
 {
     use HasFactory;
 
-    protected $table = 'software_reviews';
-
     protected $fillable = [
+        'comparison_id',
         'software_id',
-        'user_id',
-        'review',
-        'status',
     ];
 
     /**
-     * Software yang direview.
+     * Comparison parent.
+     */
+    public function comparison(): BelongsTo
+    {
+        return $this->belongsTo(
+            Comparison::class,
+            'comparison_id'
+        );
+    }
+
+    /**
+     * Software yang dibandingkan.
      */
     public function software(): BelongsTo
     {
         return $this->belongsTo(
             Software::class,
             'software_id'
-        );
-    }
-
-    /**
-     * User yang membuat review.
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(
-            User::class,
-            'user_id'
         );
     }
 }

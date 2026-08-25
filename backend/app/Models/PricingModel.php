@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class SoftwareCategory extends Model
+class PricingModel extends Model
 {
     use HasFactory;
 
@@ -17,13 +17,13 @@ class SoftwareCategory extends Model
     ];
 
     /**
-     * Software belonging to this category.
+     * Software pricing yang menggunakan pricing model ini.
      */
-    public function softwares(): HasMany
+    public function softwarePricings(): HasMany
     {
         return $this->hasMany(
-            Software::class,
-            'category_id'
+            SoftwarePricing::class,
+            'pricing_model_id'
         );
     }
 }

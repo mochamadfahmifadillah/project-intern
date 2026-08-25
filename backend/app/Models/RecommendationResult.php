@@ -6,25 +6,35 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class SoftwareIntegration extends Model
+class RecommendationResult extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'recommendation_session_id',
         'software_id',
-        'name',
-        'type',
-        'description',
-        'website_url',
-        'is_active',
+        'score',
+        'rank',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'score' => 'decimal:2',
+        'rank' => 'integer',
     ];
 
     /**
-     * Software yang memiliki integration ini.
+     * Recommendation session.
+     */
+    public function session(): BelongsTo
+    {
+        return $this->belongsTo(
+            RecommendationSession::class,
+            'recommendation_session_id'
+        );
+    }
+
+    /**
+     * Software yang direkomendasikan.
      */
     public function software(): BelongsTo
     {

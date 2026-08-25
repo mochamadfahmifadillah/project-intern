@@ -6,38 +6,34 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class SoftwareReview extends Model
+class SavedSoftware extends Model
 {
     use HasFactory;
 
-    protected $table = 'software_reviews';
-
     protected $fillable = [
-        'software_id',
         'user_id',
-        'review',
-        'status',
+        'software_id',
     ];
 
     /**
-     * Software yang direview.
-     */
-    public function software(): BelongsTo
-    {
-        return $this->belongsTo(
-            Software::class,
-            'software_id'
-        );
-    }
-
-    /**
-     * User yang membuat review.
+     * User yang menyimpan software.
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(
             User::class,
             'user_id'
+        );
+    }
+
+    /**
+     * Software yang disimpan.
+     */
+    public function software(): BelongsTo
+    {
+        return $this->belongsTo(
+            Software::class,
+            'software_id'
         );
     }
 }
