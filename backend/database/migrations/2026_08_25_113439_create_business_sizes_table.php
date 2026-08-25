@@ -8,10 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('pricing_models', function (Blueprint $table) {
+        Schema::create('business_sizes', function (Blueprint $table) {
             $table->id();
 
-            $table->string('name')->unique();
+            $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
 
@@ -21,6 +21,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('pricing_models');
+        Schema::dropIfExists('business_sizes');
     }
 };
