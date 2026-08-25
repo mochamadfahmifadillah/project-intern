@@ -12,7 +12,10 @@ class SoftwarePricingController extends Controller
      */
     public function index()
     {
-        $pricings = SoftwarePricing::with('software')
+        $pricings = SoftwarePricing::with([
+            'software',
+            'pricingModel',
+        ])
             ->latest()
             ->get();
 
@@ -34,9 +37,10 @@ class SoftwarePricingController extends Controller
                 'exists:softwares,id',
             ],
 
-            'pricing_type' => [
+            'pricing_model_id' => [
                 'required',
-                'in:free,freemium,paid,custom',
+                'integer',
+                'exists:pricing_models,id',
             ],
 
             'price' => [
@@ -45,28 +49,18 @@ class SoftwarePricingController extends Controller
                 'min:0',
             ],
 
-            'currency' => [
-                'nullable',
-                'string',
-                'size:3',
-            ],
-
-            'billing_period' => [
-                'nullable',
-                'in:monthly,yearly,one_time,custom',
-            ],
-
             'description' => [
                 'nullable',
                 'string',
             ],
         ]);
 
-        $validated['currency'] = $validated['currency'] ?? 'USD';
-
         $pricing = SoftwarePricing::create($validated);
 
-        $pricing->load('software');
+        $pricing->load([
+            'software',
+            'pricingModel',
+        ]);
 
         return response()->json([
             'message' => 'Pricing software berhasil dibuat.',
@@ -79,7 +73,10 @@ class SoftwarePricingController extends Controller
      */
     public function show(SoftwarePricing $softwarePricing)
     {
-        $softwarePricing->load('software');
+        $softwarePricing->load([
+            'software',
+            'pricingModel',
+        ]);
 
         return response()->json([
             'message' => 'Detail pricing software berhasil diambil.',
@@ -101,9 +98,10 @@ class SoftwarePricingController extends Controller
                 'exists:softwares,id',
             ],
 
-            'pricing_type' => [
+            'pricing_model_id' => [
                 'required',
-                'in:free,freemium,paid,custom',
+                'integer',
+                'exists:pricing_models,id',
             ],
 
             'price' => [
@@ -112,32 +110,22 @@ class SoftwarePricingController extends Controller
                 'min:0',
             ],
 
-            'currency' => [
-                'nullable',
-                'string',
-                'size:3',
-            ],
-
-            'billing_period' => [
-                'nullable',
-                'in:monthly,yearly,one_time,custom',
-            ],
-
             'description' => [
                 'nullable',
                 'string',
             ],
         ]);
 
-        $validated['currency'] = $validated['currency'] ?? 'USD';
-
         $softwarePricing->update($validated);
 
-        $softwarePricing->load('software');
+        $softwarePricing->load([
+            'software',
+            'pricingModel',
+        ]);
 
         return response()->json([
             'message' => 'Pricing software berhasil diperbarui.',
-            'data' => $softwarePricing->fresh('software'),
+            'data' => $softwarePricing,
         ]);
     }
 

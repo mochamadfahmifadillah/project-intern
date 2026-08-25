@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -13,28 +16,9 @@ class AuthController extends Controller
     /**
      * Register user baru.
      */
-    public function register(Request $request)
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                'unique:users,email',
-            ],
-            'password' => [
-                'required',
-                'string',
-                'min:8',
-                'confirmed',
-            ],
-        ]);
+        $validated = $request->validated();
 
         $user = User::create([
             'name' => $validated['name'],
@@ -46,7 +30,9 @@ class AuthController extends Controller
             'roles.permissions',
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user
+            ->createToken('auth_token')
+            ->plainTextToken;
 
         return response()->json([
             'message' => 'Registrasi berhasil',
@@ -58,18 +44,9 @@ class AuthController extends Controller
     /**
      * Login user.
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'email' => [
-                'required',
-                'email',
-            ],
-            'password' => [
-                'required',
-                'string',
-            ],
-        ]);
+        $validated = $request->validated();
 
         $user = User::where(
             'email',
@@ -92,7 +69,9 @@ class AuthController extends Controller
             'roles.permissions',
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user
+            ->createToken('auth_token')
+            ->plainTextToken;
 
         return response()->json([
             'message' => 'Login berhasil',
@@ -104,13 +83,14 @@ class AuthController extends Controller
     /**
      * Mengubah password user yang sedang login.
      */
-    public function updatePassword(Request $request)
+    public function updatePassword(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'current_password' => [
                 'required',
                 'string',
             ],
+
             'password' => [
                 'required',
                 'string',
@@ -121,17 +101,22 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        if (!Hash::check(
-            $validated['current_password'],
-            $user->password
-        )) {
+        if (
+            !$user ||
+            !Hash::check(
+                $validated['current_password'],
+                $user->password
+            )
+        ) {
             return response()->json([
                 'message' => 'Password saat ini salah.',
             ], 422);
         }
 
         $user->update([
-            'password' => Hash::make($validated['password']),
+            'password' => Hash::make(
+                $validated['password']
+            ),
         ]);
 
         return response()->json([
@@ -140,9 +125,9 @@ class AuthController extends Controller
     }
 
     /**
-     * Dashboard statistics.
+     * Dashboard statistics berdasarkan permission user.
      */
-    public function dashboard(Request $request)
+    public function dashboard(Request $request): JsonResponse
     {
         $user = $request->user();
 
@@ -177,9 +162,11 @@ class AuthController extends Controller
     /**
      * Logout user.
      */
-    public function logout(Request $request)
+    public function logout(Request $request): JsonResponse
     {
-        $token = $request->user()->currentAccessToken();
+        $token = $request
+            ->user()
+            ->currentAccessToken();
 
         if ($token) {
             $token->delete();
@@ -193,7 +180,7 @@ class AuthController extends Controller
     /**
      * Mendapatkan data user yang sedang login.
      */
-    public function user(Request $request)
+    public function user(Request $request): JsonResponse
     {
         $user = $request->user();
 

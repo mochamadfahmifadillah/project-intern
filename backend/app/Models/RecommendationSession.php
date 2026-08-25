@@ -13,11 +13,14 @@ class RecommendationSession extends Model
 
     protected $fillable = [
         'user_id',
+        'session_key',
         'answers',
+        'completed_at',
     ];
 
     protected $casts = [
         'answers' => 'array',
+        'completed_at' => 'datetime',
     ];
 
     /**

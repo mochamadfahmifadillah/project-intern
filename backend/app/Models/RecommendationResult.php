@@ -15,11 +15,13 @@ class RecommendationResult extends Model
         'software_id',
         'score',
         'rank',
+        'fit_indicators',
     ];
 
     protected $casts = [
         'score' => 'decimal:2',
         'rank' => 'integer',
+        'fit_indicators' => 'array',
     ];
 
     /**

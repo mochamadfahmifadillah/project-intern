@@ -4,20 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Software;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class SoftwareController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of software for admin.
      */
     public function index()
     {
         $softwares = Software::with([
             'category',
-            'pricings',
+            'features',
+            'pricings.pricingModel',
+            'integrations',
             'ratings',
             'reviews',
+            'industries',
+            'businessSizes',
         ])
             ->latest()
             ->get();
@@ -29,7 +34,7 @@ class SoftwareController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created software.
      */
     public function store(Request $request)
     {
@@ -74,6 +79,38 @@ class SoftwareController extends Controller
                 'nullable',
                 'in:active,inactive',
             ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Industry
+            |--------------------------------------------------------------------------
+            */
+
+            'industry_ids' => [
+                'nullable',
+                'array',
+            ],
+
+            'industry_ids.*' => [
+                'integer',
+                'exists:industries,id',
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Business Size
+            |--------------------------------------------------------------------------
+            */
+
+            'business_size_ids' => [
+                'nullable',
+                'array',
+            ],
+
+            'business_size_ids.*' => [
+                'integer',
+                'exists:business_sizes,id',
+            ],
         ]);
 
         /*
@@ -82,8 +119,8 @@ class SoftwareController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $validated['slug'] =
-            $validated['slug'] ?? Str::slug($validated['name']);
+        $validated['slug'] = $validated['slug']
+            ?? Str::slug($validated['name']);
 
         /*
         |--------------------------------------------------------------------------
@@ -91,12 +128,26 @@ class SoftwareController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $validated['status'] =
-            $validated['status'] ?? 'active';
+        $validated['status'] = $validated['status']
+            ?? 'active';
 
         /*
         |--------------------------------------------------------------------------
-        | Check Duplicate Slug
+        | Extract Relationship IDs
+        |--------------------------------------------------------------------------
+        */
+
+        $industryIds = $validated['industry_ids'] ?? [];
+        $businessSizeIds = $validated['business_size_ids'] ?? [];
+
+        unset(
+            $validated['industry_ids'],
+            $validated['business_size_ids']
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Extra Slug Check
         |--------------------------------------------------------------------------
         */
 
@@ -113,17 +164,39 @@ class SoftwareController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Create Software
+        | Create Software + Relationships
         |--------------------------------------------------------------------------
         */
 
-        $software = Software::create($validated);
+        $software = DB::transaction(function () use (
+            $validated,
+            $industryIds,
+            $businessSizeIds
+        ) {
+            $software = Software::create($validated);
+
+            $software->industries()->sync($industryIds);
+
+            $software->businessSizes()->sync($businessSizeIds);
+
+            return $software;
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Load Relationships
+        |--------------------------------------------------------------------------
+        */
 
         $software->load([
             'category',
-            'pricings',
+            'features',
+            'pricings.pricingModel',
+            'integrations',
             'ratings',
             'reviews',
+            'industries',
+            'businessSizes',
         ]);
 
         return response()->json([
@@ -133,17 +206,19 @@ class SoftwareController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified software for admin.
      */
     public function show(Software $software)
     {
         $software->load([
             'category',
             'features',
-            'pricings',
+            'pricings.pricingModel',
             'integrations',
             'ratings',
-            'reviews',
+            'reviews.user',
+            'industries',
+            'businessSizes',
         ]);
 
         return response()->json([
@@ -153,7 +228,7 @@ class SoftwareController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified software.
      */
     public function update(Request $request, Software $software)
     {
@@ -198,6 +273,38 @@ class SoftwareController extends Controller
                 'nullable',
                 'in:active,inactive',
             ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Industry
+            |--------------------------------------------------------------------------
+            */
+
+            'industry_ids' => [
+                'nullable',
+                'array',
+            ],
+
+            'industry_ids.*' => [
+                'integer',
+                'exists:industries,id',
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Business Size
+            |--------------------------------------------------------------------------
+            */
+
+            'business_size_ids' => [
+                'nullable',
+                'array',
+            ],
+
+            'business_size_ids.*' => [
+                'integer',
+                'exists:business_sizes,id',
+            ],
         ]);
 
         /*
@@ -207,8 +314,24 @@ class SoftwareController extends Controller
         */
 
         if (empty($validated['slug'])) {
-            $validated['slug'] = Str::slug($validated['name']);
+            $validated['slug'] = Str::slug(
+                $validated['name']
+            );
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Extract Relationship IDs
+        |--------------------------------------------------------------------------
+        */
+
+        $industryIds = $validated['industry_ids'] ?? [];
+        $businessSizeIds = $validated['business_size_ids'] ?? [];
+
+        unset(
+            $validated['industry_ids'],
+            $validated['business_size_ids']
+        );
 
         /*
         |--------------------------------------------------------------------------
@@ -216,7 +339,10 @@ class SoftwareController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $slugExists = Software::where('slug', $validated['slug'])
+        $slugExists = Software::where(
+            'slug',
+            $validated['slug']
+        )
             ->where('id', '!=', $software->id)
             ->exists();
 
@@ -233,19 +359,38 @@ class SoftwareController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Update Software
+        | Update Software + Relationships
         |--------------------------------------------------------------------------
         */
 
-        $software->update($validated);
+        DB::transaction(function () use (
+            $software,
+            $validated,
+            $industryIds,
+            $businessSizeIds
+        ) {
+            $software->update($validated);
+
+            $software->industries()->sync($industryIds);
+
+            $software->businessSizes()->sync($businessSizeIds);
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Reload Relationships
+        |--------------------------------------------------------------------------
+        */
 
         $software->load([
             'category',
             'features',
-            'pricings',
+            'pricings.pricingModel',
             'integrations',
             'ratings',
             'reviews',
+            'industries',
+            'businessSizes',
         ]);
 
         return response()->json([
@@ -255,7 +400,7 @@ class SoftwareController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified software.
      */
     public function destroy(Software $software)
     {
@@ -269,20 +414,21 @@ class SoftwareController extends Controller
     /**
      * Display public software directory.
      *
-     * Supports:
-     * - search by software name
-     * - search by software description
-     * - search by category name
-     * - filter by category slug
-     * - filter by pricing type
+     * Supported query parameters:
      *
-     * Examples:
+     * ?search=figma
+     * ?category=design
+     * ?pricing=free
+     * ?industry=technology
+     * ?business_size=small-business
      *
-     * GET /api/software-directory
-     * GET /api/software-directory?search=figma
-     * GET /api/software-directory?category=design
-     * GET /api/software-directory?pricing=free
-     * GET /api/software-directory?category=design&pricing=paid
+     * Combination:
+     *
+     * ?search=crm
+     * &category=sales
+     * &pricing=paid
+     * &industry=technology
+     * &business_size=small-business
      */
     public function publicIndex(Request $request)
     {
@@ -294,9 +440,13 @@ class SoftwareController extends Controller
 
         $query = Software::with([
             'category',
-            'pricings',
+            'features',
+            'pricings.pricingModel',
+            'integrations',
             'ratings',
             'reviews',
+            'industries',
+            'businessSizes',
         ])
             ->where('status', 'active');
 
@@ -304,21 +454,60 @@ class SoftwareController extends Controller
         |--------------------------------------------------------------------------
         | Search
         |--------------------------------------------------------------------------
+        |
+        | Search berdasarkan:
+        | - software name
+        | - description
+        | - category
+        | - industry
+        | - business size
+        |
         */
 
         if ($request->filled('search')) {
             $search = trim($request->search);
 
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'ILIKE', "%{$search}%")
-                    ->orWhere('description', 'ILIKE', "%{$search}%")
-                    ->orWhereHas('category', function ($categoryQuery) use ($search) {
-                        $categoryQuery->where(
-                            'name',
-                            'ILIKE',
-                            "%{$search}%"
-                        );
-                    });
+                $q->where(
+                    'name',
+                    'ILIKE',
+                    "%{$search}%"
+                )
+                    ->orWhere(
+                        'description',
+                        'ILIKE',
+                        "%{$search}%"
+                    )
+                    ->orWhereHas(
+                        'category',
+                        function ($categoryQuery) use ($search) {
+                            $categoryQuery->where(
+                                'name',
+                                'ILIKE',
+                                "%{$search}%"
+                            );
+                        }
+                    )
+                    ->orWhereHas(
+                        'industries',
+                        function ($industryQuery) use ($search) {
+                            $industryQuery->where(
+                                'name',
+                                'ILIKE',
+                                "%{$search}%"
+                            );
+                        }
+                    )
+                    ->orWhereHas(
+                        'businessSizes',
+                        function ($businessSizeQuery) use ($search) {
+                            $businessSizeQuery->where(
+                                'name',
+                                'ILIKE',
+                                "%{$search}%"
+                            );
+                        }
+                    );
             });
         }
 
@@ -331,31 +520,85 @@ class SoftwareController extends Controller
         if ($request->filled('category')) {
             $category = trim($request->category);
 
-            $query->whereHas('category', function ($categoryQuery) use ($category) {
-                $categoryQuery->where('slug', $category);
-            });
+            $query->whereHas(
+                'category',
+                function ($categoryQuery) use ($category) {
+                    $categoryQuery->where(
+                        'slug',
+                        $category
+                    );
+                }
+            );
         }
 
         /*
         |--------------------------------------------------------------------------
-        | Pricing Model Filter
+        | Pricing Filter
         |--------------------------------------------------------------------------
         |
-        | Available pricing types:
+        | Pricing diambil melalui:
         |
-        | - free
-        | - freemium
-        | - paid
-        | - custom
+        | Software
+        |     -> pricings
+        |         -> pricingModel
+        |
+        | Jadi bukan pricing_type pada software_pricings.
         |
         */
 
         if ($request->filled('pricing')) {
             $pricing = trim($request->pricing);
 
-            $query->whereHas('pricings', function ($pricingQuery) use ($pricing) {
-                $pricingQuery->where('pricing_type', $pricing);
-            });
+            $query->whereHas(
+                'pricings.pricingModel',
+                function ($pricingQuery) use ($pricing) {
+                    $pricingQuery
+                        ->where('slug', $pricing)
+                        ->orWhere('name', 'ILIKE', $pricing);
+                }
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Industry Filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('industry')) {
+            $industry = trim($request->industry);
+
+            $query->whereHas(
+                'industries',
+                function ($industryQuery) use ($industry) {
+                    $industryQuery->where(
+                        'slug',
+                        $industry
+                    );
+                }
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Business Size Filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('business_size')) {
+            $businessSize = trim(
+                $request->business_size
+            );
+
+            $query->whereHas(
+                'businessSizes',
+                function ($businessSizeQuery) use ($businessSize) {
+                    $businessSizeQuery->where(
+                        'slug',
+                        $businessSize
+                    );
+                }
+            );
         }
 
         /*
@@ -396,10 +639,12 @@ class SoftwareController extends Controller
         $software = Software::with([
             'category',
             'features',
-            'pricings',
+            'pricings.pricingModel',
             'integrations',
             'ratings',
-            'reviews',
+            'reviews.user',
+            'industries',
+            'businessSizes',
         ])
             ->where('status', 'active')
             ->where('slug', $slug)

@@ -10,19 +10,32 @@ class ImplementationRequest extends Model
 {
     use HasFactory;
 
+    protected $table = 'implementation_requests';
+
     protected $fillable = [
         'user_id',
+        'software_id',
+        'assigned_to',
         'company_name',
         'contact_name',
-        'email',
-        'phone',
-        'project_requirement',
+        'contact_email',
+        'contact_phone',
+        'project_requirements',
+        'additional_notes',
         'status',
-        'assigned_to',
+        'contacted_at',
+        'qualified_at',
+        'closed_at',
+    ];
+
+    protected $casts = [
+        'contacted_at' => 'datetime',
+        'qualified_at' => 'datetime',
+        'closed_at' => 'datetime',
     ];
 
     /**
-     * User yang membuat implementation request.
+     * User yang mengajukan implementation request.
      */
     public function user(): BelongsTo
     {
@@ -33,7 +46,18 @@ class ImplementationRequest extends Model
     }
 
     /**
-     * Admin yang menangani lead.
+     * Software yang ingin diimplementasikan.
+     */
+    public function software(): BelongsTo
+    {
+        return $this->belongsTo(
+            Software::class,
+            'software_id'
+        );
+    }
+
+    /**
+     * Admin/partner yang menangani lead.
      */
     public function assignedTo(): BelongsTo
     {
