@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   Building2,
@@ -15,168 +16,96 @@ import {
   Trophy,
   Users,
   WalletCards,
-  X,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
-interface RecommendationItem {
-  rank: number;
-  name: string;
-  description: string;
-  rating: number;
-  reviews: number;
-  matchScore: number;
-  matchLabel: string;
-  logoClass: string;
-  reasons: string[];
-  tags: string[];
-}
+import {
+  createRecommendation,
+  type RecommendationResponse,
+  type RecommendationResult,
+} from "../../services/softwareService";
 
-const RECOMMENDATIONS: RecommendationItem[] = [
-  {
-    rank: 1,
-    name: "Zoho CRM",
-    description:
-      "Complete CRM platform to attract, engage and delight customers across sales, marketing, and support.",
-    rating: 4.6,
-    reviews: 2456,
-    matchScore: 95,
-    matchLabel: "Excellent Match",
-    logoClass: "text-blue-600",
-    reasons: [
-      "Meets 9 of your 10 must-have features",
-      "Perfect for your team size (20-50)",
-      "Within your budget range",
-      "Strong in your industry",
-    ],
-    tags: ["CRM", "Sales Automation", "Marketing Automation", "+2"],
-  },
-  {
-    rank: 2,
-    name: "HubSpot CRM",
-    description: "AI-powered CRM with marketing, sales, and service tools.",
-    rating: 4.5,
-    reviews: 1892,
-    matchScore: 88,
-    matchLabel: "Great Match",
-    logoClass: "text-orange-500",
-    reasons: [
-      "Meets 8 of your 10 must-have features",
-      "Good for your team size",
-      "Slightly above your budget",
-      "Excellent ease of use",
-    ],
-    tags: ["CRM", "Marketing Automation", "Email Marketing", "+2"],
-  },
-  {
-    rank: 3,
-    name: "Salesforce Sales Cloud",
-    description: "The world's #1 CRM for sales teams of all sizes.",
-    rating: 4.4,
-    reviews: 3210,
-    matchScore: 82,
-    matchLabel: "Good Match",
-    logoClass: "text-sky-500",
-    reasons: [
-      "Meets 7 of your 10 must-have features",
-      "Scales well as you grow",
-      "Above your budget",
-      "Best-in-class reporting",
-    ],
-    tags: ["CRM", "Sales Automation", "Analytics", "+3"],
-  },
-];
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
 
-const OTHER_SOFTWARE = [
-  {
-    name: "Pipedrive",
-    rating: "4.2",
-    logo: "P",
-    className: "text-emerald-600",
-  },
-  {
-    name: "freshsales",
-    rating: "4.1",
-    logo: "◉",
-    className: "text-orange-500",
-  },
-  {
-    name: "monday CRM",
-    rating: "4.0",
-    logo: "●",
-    className: "text-cyan-500",
-  },
-  {
-    name: "Microsoft Dynamics 365",
-    rating: "4.0",
-    logo: "◆",
-    className: "text-blue-500",
-  },
-];
+const ANSWERS_STORAGE_KEY = "software_empire_recommendation_answers";
+const RESULT_STORAGE_KEY = "software_empire_recommendation_result";
 
-function SoftwareLogo({
-  name,
-  className,
+/*
+|--------------------------------------------------------------------------
+| Label Helpers
+|--------------------------------------------------------------------------
+*/
+
+const formatLabel = (value?: string | null): string => {
+  if (!value) {
+    return "-";
+  }
+
+  return value
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const formatScore = (score: number | string): number => {
+  const parsed = Number(score);
+
+  if (Number.isNaN(parsed)) {
+    return 0;
+  }
+
+  return Math.round(parsed);
+};
+
+const getMatchLabel = (score: number): string => {
+  if (score >= 90) {
+    return "Excellent Match";
+  }
+
+  if (score >= 80) {
+    return "Great Match";
+  }
+
+  if (score >= 70) {
+    return "Good Match";
+  }
+
+  if (score >= 60) {
+    return "Fair Match";
+  }
+
+  return "Possible Match";
+};
+
+/*
+|--------------------------------------------------------------------------
+| Score Component
+|--------------------------------------------------------------------------
+*/
+
+function MatchScore({
+  score,
+  label,
 }: {
-  name: string;
-  className: string;
+  score: number;
+  label: string;
 }) {
-  if (name === "Zoho CRM") {
-    return (
-      <div
-        className={`relative flex h-14 w-14 items-center justify-center ${className}`}
-      >
-        <div className="h-8 w-8 rotate-45 rounded-[9px] border-[4px] border-current" />
-        <div className="absolute h-2 w-10 rounded-full bg-current" />
-      </div>
-    );
-  }
-
-  if (name === "HubSpot CRM") {
-    return (
-      <div
-        className={`flex h-14 w-14 items-center justify-center ${className}`}
-      >
-        <div className="relative h-9 w-9">
-          <div className="absolute left-3 top-3 h-4 w-4 rounded-full border-[4px] border-current" />
-
-          <div className="absolute left-0 top-1 h-3 w-3 rounded-full border-[3px] border-current" />
-
-          <div className="absolute left-0 top-2 h-[3px] w-5 rotate-[-25deg] bg-current" />
-
-          <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-[3px] border-current" />
-
-          <div className="absolute right-1 top-0 h-3 w-3 rounded-full border-[3px] border-current" />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`flex h-14 w-14 items-center justify-center ${className}`}>
-      <div className="relative h-10 w-12">
-        <div className="absolute left-1 top-2 h-7 w-10 rounded-[50%] bg-current opacity-90" />
-
-        <div className="absolute left-3 top-0 h-8 w-7 rounded-full border-[3px] border-white/70" />
-
-        <span className="absolute inset-0 flex items-center justify-center text-[7px] font-black text-white">
-          salesforce
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function MatchScore({ score, label }: { score: number; label: string }) {
   const radius = 30;
   const circumference = 2 * Math.PI * radius;
 
-  const progress = circumference - (score / 100) * circumference;
+  const progress =
+    circumference - (score / 100) * circumference;
 
   return (
     <div className="flex flex-col items-center">
       <div className="relative h-[82px] w-[82px]">
-        <svg viewBox="0 0 80 80" className="-rotate-90">
+        <svg
+          viewBox="0 0 80 80"
+          className="-rotate-90"
+        >
           <circle
             cx="40"
             cy="40"
@@ -200,17 +129,362 @@ function MatchScore({ score, label }: { score: number; label: string }) {
         </svg>
 
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-[18px] font-bold text-[#12244d]">{score}%</span>
+          <span className="text-[18px] font-bold text-[#12244d]">
+            {score}%
+          </span>
         </div>
       </div>
 
-      <p className="mt-0.5 text-[8px] font-medium text-slate-500">{label}</p>
+      <p className="mt-0.5 text-[8px] font-medium text-slate-500">
+        {label}
+      </p>
     </div>
   );
 }
 
+/*
+|--------------------------------------------------------------------------
+| Software Logo
+|--------------------------------------------------------------------------
+*/
+
+function SoftwareLogo({
+  name,
+  logo,
+}: {
+  name: string;
+  logo: string | null;
+}) {
+  if (logo) {
+    return (
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#e5eaf2] bg-white p-2">
+        <img
+          src={logo}
+          alt={`${name} logo`}
+          className="h-full w-full object-contain"
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#f4f7fb] text-[15px] font-black text-[#1748c8]">
+      {name.charAt(0).toUpperCase()}
+    </div>
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
+| Recommendation Reasons
+|--------------------------------------------------------------------------
+*/
+
+function getReasons(
+  item: RecommendationResult,
+): string[] {
+  const reasons: string[] = [];
+
+  if (item.fit_indicators.category) {
+    reasons.push("Matches your software category");
+  }
+
+  if (item.fit_indicators.industry) {
+    reasons.push("Strong fit for your industry");
+  }
+
+  if (item.fit_indicators.business_size) {
+    reasons.push("Fits your business size");
+  }
+
+  if (item.fit_indicators.pricing) {
+    reasons.push("Fits your pricing preference");
+  }
+
+  if (reasons.length === 0) {
+    reasons.push("Recommended based on your selected criteria");
+  }
+
+  return reasons;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Recommendation Tags
+|--------------------------------------------------------------------------
+*/
+
+function getTags(item: RecommendationResult): string[] {
+  const tags: string[] = [];
+
+  if (item.software.category?.name) {
+    tags.push(item.software.category.name);
+  }
+
+  if (item.fit_indicators.category) {
+    tags.push("Category Match");
+  }
+
+  if (item.fit_indicators.industry) {
+    tags.push("Industry Match");
+  }
+
+  if (item.fit_indicators.business_size) {
+    tags.push("Business Size Match");
+  }
+
+  if (item.fit_indicators.pricing) {
+    tags.push("Pricing Match");
+  }
+
+  return tags.slice(0, 5);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Recommendation Result
+|--------------------------------------------------------------------------
+*/
+
 function RecommendationResult() {
   const navigate = useNavigate();
+
+  const [recommendation, setRecommendation] =
+    useState<RecommendationResponse | null>(null);
+
+  const [loading, setLoading] = useState(true);
+
+  const [error, setError] = useState<string | null>(null);
+
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+
+  /*
+  |--------------------------------------------------------------------------
+  | Load Recommendation
+  |--------------------------------------------------------------------------
+  */
+
+  useEffect(() => {
+    const loadRecommendation = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Load frontend answers
+        |--------------------------------------------------------------------------
+        */
+
+        const storedAnswers =
+          sessionStorage.getItem(
+            ANSWERS_STORAGE_KEY,
+          );
+
+        if (storedAnswers) {
+          try {
+            setAnswers(JSON.parse(storedAnswers));
+          } catch {
+            setAnswers({});
+          }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Load cached API result
+        |--------------------------------------------------------------------------
+        */
+
+        const storedResult =
+          sessionStorage.getItem(
+            RESULT_STORAGE_KEY,
+          );
+
+        if (storedResult) {
+          try {
+            const parsedResult =
+              JSON.parse(storedResult) as RecommendationResponse;
+
+            if (
+              parsedResult?.data?.results
+            ) {
+              setRecommendation(parsedResult);
+              setLoading(false);
+              return;
+            }
+          } catch {
+            sessionStorage.removeItem(
+              RESULT_STORAGE_KEY,
+            );
+          }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Fallback:
+        | request recommendation again
+        |--------------------------------------------------------------------------
+        */
+
+        const storedAnswersForRequest =
+          storedAnswers
+            ? JSON.parse(storedAnswers)
+            : {};
+
+        const payload = {
+          industry:
+            storedAnswersForRequest[3],
+          business_size:
+            storedAnswersForRequest[2],
+          pricing:
+            storedAnswersForRequest[6],
+        };
+
+        const response =
+          await createRecommendation(payload);
+
+        setRecommendation(response);
+
+        sessionStorage.setItem(
+          RESULT_STORAGE_KEY,
+          JSON.stringify(response),
+        );
+      } catch (err) {
+        console.error(
+          "Failed to load recommendation:",
+          err,
+        );
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load recommendation results.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRecommendation();
+  }, []);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Results
+  |--------------------------------------------------------------------------
+  */
+
+  const results =
+    recommendation?.data?.results ?? [];
+
+  /*
+  |--------------------------------------------------------------------------
+  | Top 3
+  |--------------------------------------------------------------------------
+  */
+
+  const topRecommendations =
+    useMemo(() => {
+      return [...results]
+        .sort(
+          (a, b) =>
+            Number(a.rank) -
+            Number(b.rank),
+        )
+        .slice(0, 3);
+    }, [results]);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Summary Values
+  |--------------------------------------------------------------------------
+  */
+
+  const businessType = formatLabel(
+    answers[1],
+  );
+
+  const businessSize = formatLabel(
+    answers[2],
+  );
+
+  const industry = formatLabel(
+    answers[3],
+  );
+
+  const budget = formatLabel(
+    answers[6],
+  );
+
+  /*
+  |--------------------------------------------------------------------------
+  | Loading
+  |--------------------------------------------------------------------------
+  */
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="mx-auto flex h-12 w-12 animate-pulse items-center justify-center rounded-xl bg-[#1748c8]">
+            <Sparkles className="h-6 w-6 text-white" />
+          </div>
+
+          <p className="mt-4 text-sm font-semibold text-[#12244d]">
+            Finding your best software...
+          </p>
+
+          <p className="mt-1 text-[10px] text-slate-500">
+            We're analyzing your business needs.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Error
+  |--------------------------------------------------------------------------
+  */
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white px-5">
+        <div className="w-full max-w-md rounded-xl border border-red-100 bg-white p-6 text-center shadow-sm">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+            <ShieldCheck className="h-6 w-6 text-red-500" />
+          </div>
+
+          <h1 className="mt-4 text-lg font-bold text-[#12244d]">
+            Unable to load recommendations
+          </h1>
+
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            {error}
+          </p>
+
+          <button
+            onClick={() =>
+              navigate("/recommendation")
+            }
+            className="mt-5 rounded-md bg-[#1748c8] px-5 py-2 text-xs font-semibold text-white"
+          >
+            Start Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Main
+  |--------------------------------------------------------------------------
+  */
 
   return (
     <div className="min-h-screen bg-white text-[#12244d]">
@@ -222,9 +496,14 @@ function RecommendationResult() {
         <div className="mx-auto flex h-[58px] max-w-[1500px] items-center px-5 lg:px-8">
           {/* Logo */}
 
-          <Link to="/" className="flex shrink-0 items-center gap-2">
+          <Link
+            to="/"
+            className="flex shrink-0 items-center gap-2"
+          >
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#173b82]">
-              <span className="text-[10px] font-black text-white">SE</span>
+              <span className="text-[10px] font-black text-white">
+                SE
+              </span>
             </div>
 
             <div className="hidden leading-none sm:block">
@@ -263,6 +542,7 @@ function RecommendationResult() {
               className="relative py-[21px] text-[11px] font-semibold text-[#1748c8]"
             >
               Recommend
+
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1748c8]" />
             </Link>
 
@@ -271,7 +551,9 @@ function RecommendationResult() {
               <ChevronDown className="h-3 w-3" />
             </button>
 
-            <button className="text-[11px] text-slate-700">For Vendors</button>
+            <button className="text-[11px] text-slate-700">
+              For Vendors
+            </button>
           </nav>
 
           {/* Right */}
@@ -326,6 +608,7 @@ function RecommendationResult() {
               "Results",
             ].map((label, index) => {
               const step = index + 1;
+
               const isResult = step === 10;
 
               return (
@@ -340,12 +623,18 @@ function RecommendationResult() {
                         : "border-[#cbd5e1] bg-white text-[#1748c8]"
                     }`}
                   >
-                    {isResult ? "10" : <Check className="h-3 w-3" />}
+                    {isResult ? (
+                      "10"
+                    ) : (
+                      <Check className="h-3 w-3" />
+                    )}
                   </span>
 
                   <span
                     className={`mt-1.5 text-[8px] ${
-                      isResult ? "font-bold text-[#1748c8]" : "text-slate-600"
+                      isResult
+                        ? "font-bold text-[#1748c8]"
+                        : "text-slate-600"
                     }`}
                   >
                     {label}
@@ -356,7 +645,9 @@ function RecommendationResult() {
           </div>
         </section>
 
-        {/* Mobile Progress */}
+        {/* =======================================================
+            MOBILE PROGRESS
+        ======================================================= */}
 
         <section className="block border-b border-[#edf0f5] py-4 lg:hidden">
           <div className="flex items-center justify-between">
@@ -365,7 +656,9 @@ function RecommendationResult() {
                 Step 10 of 10
               </p>
 
-              <p className="mt-1 text-xs font-bold">Results</p>
+              <p className="mt-1 text-xs font-bold">
+                Results
+              </p>
             </div>
 
             <span className="text-[9px] font-semibold text-slate-500">
@@ -409,11 +702,13 @@ function RecommendationResult() {
               </h1>
 
               <p className="mt-1 text-[9px] text-slate-600">
-                Based on your answers, we found the best software that match
-                your business needs.
+                Based on your answers, we found the best software
+                that match your business needs.
               </p>
 
               <div className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
+                {/* Business Type */}
+
                 <div className="rounded-md border border-[#dce5ef] bg-white px-2.5 py-2">
                   <div className="flex items-center gap-1.5">
                     <Building2 className="h-3.5 w-3.5 text-[#1748c8]" />
@@ -423,40 +718,56 @@ function RecommendationResult() {
                     </span>
                   </div>
 
-                  <p className="mt-1 text-[9px] font-bold">B2B</p>
+                  <p className="mt-1 text-[9px] font-bold">
+                    {businessType}
+                  </p>
                 </div>
+
+                {/* Industry */}
 
                 <div className="rounded-md border border-[#dce5ef] bg-white px-2.5 py-2">
                   <div className="flex items-center gap-1.5">
                     <Building2 className="h-3.5 w-3.5 text-emerald-600" />
 
-                    <span className="text-[7px] text-slate-500">Industry</span>
+                    <span className="text-[7px] text-slate-500">
+                      Industry
+                    </span>
                   </div>
 
                   <p className="mt-1 text-[9px] font-bold">
-                    Retail & E-Commerce
+                    {industry}
                   </p>
                 </div>
+
+                {/* Business Size */}
 
                 <div className="rounded-md border border-[#dce5ef] bg-white px-2.5 py-2">
                   <div className="flex items-center gap-1.5">
                     <Users className="h-3.5 w-3.5 text-emerald-600" />
 
-                    <span className="text-[7px] text-slate-500">Team Size</span>
+                    <span className="text-[7px] text-slate-500">
+                      Business Size
+                    </span>
                   </div>
 
-                  <p className="mt-1 text-[9px] font-bold">20 - 50 people</p>
+                  <p className="mt-1 text-[9px] font-bold">
+                    {businessSize}
+                  </p>
                 </div>
+
+                {/* Budget */}
 
                 <div className="rounded-md border border-[#dce5ef] bg-white px-2.5 py-2">
                   <div className="flex items-center gap-1.5">
                     <WalletCards className="h-3.5 w-3.5 text-[#1748c8]" />
 
-                    <span className="text-[7px] text-slate-500">Budget</span>
+                    <span className="text-[7px] text-slate-500">
+                      Budget
+                    </span>
                   </div>
 
                   <p className="mt-1 text-[9px] font-bold">
-                    $1,000 - $5,000 / month
+                    {budget}
                   </p>
                 </div>
               </div>
@@ -465,7 +776,9 @@ function RecommendationResult() {
             {/* Edit */}
 
             <button
-              onClick={() => navigate("/recommendation")}
+              onClick={() =>
+                navigate("/recommendation")
+              }
               className="flex items-center gap-1.5 text-[9px] font-semibold text-[#1748c8]"
             >
               <Pencil className="h-3 w-3" />
@@ -479,194 +792,296 @@ function RecommendationResult() {
         ======================================================= */}
 
         <section className="mx-auto mt-5 max-w-[930px]">
-          <h2 className="text-[15px] font-bold text-[#12244d]">
-            Top 3 Recommended Software
-          </h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-[15px] font-bold text-[#12244d]">
+                Top {Math.min(topRecommendations.length, 3)} Recommended Software
+              </h2>
 
-          <div className="mt-3 space-y-3">
-            {RECOMMENDATIONS.map((software) => (
-              <article
-                key={software.name}
-                className="relative overflow-hidden rounded-xl border border-[#e1e7f0] bg-white shadow-[0_3px_15px_rgba(30,60,100,0.03)]"
-              >
-                {/* Rank */}
-
-                <div
-                  className={`absolute left-0 top-0 flex h-9 w-9 items-center justify-center rounded-br-lg text-[14px] font-bold text-white ${
-                    software.rank === 1 ? "bg-[#2daf72]" : "bg-[#95a5bd]"
-                  }`}
-                >
-                  {software.rank}
-                </div>
-
-                <div className="grid gap-4 px-5 py-4 pl-14 lg:grid-cols-[1.7fr_0.65fr_1.4fr_1fr] lg:items-center">
-                  {/* Software */}
-
-                  <div className="flex min-w-0 items-center gap-3">
-                    <SoftwareLogo
-                      name={software.name}
-                      className={software.logoClass}
-                    />
-
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-[14px] font-bold text-[#12244d]">
-                          {software.name}
-                        </h3>
-
-                        {software.rank === 1 && (
-                          <span className="rounded-full bg-[#e8f7ef] px-2 py-0.5 text-[7px] font-bold text-[#258858]">
-                            Best Match
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="mt-1 flex items-center gap-2">
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({
-                            length: 5,
-                          }).map((_, index) => (
-                            <Star
-                              key={index}
-                              className="h-3 w-3 fill-[#f5a900] text-[#f5a900]"
-                            />
-                          ))}
-                        </div>
-
-                        <span className="text-[8px] font-semibold">
-                          {software.rating}
-                        </span>
-
-                        <span className="text-[8px] text-[#1748c8]">
-                          ({software.reviews.toLocaleString()})
-                        </span>
-                      </div>
-
-                      <p className="mt-2 max-w-[300px] text-[8px] leading-4 text-slate-500">
-                        {software.description}
-                      </p>
-
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {software.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-full bg-[#f4f7fb] px-2 py-1 text-[7px] font-medium text-slate-600"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Match Score */}
-
-                  <div className="border-y border-[#edf1f5] py-3 lg:border-x lg:border-y-0 lg:px-5">
-                    <p className="mb-1 text-center text-[8px] text-slate-500">
-                      Match Score
-                    </p>
-
-                    <MatchScore
-                      score={software.matchScore}
-                      label={software.matchLabel}
-                    />
-                  </div>
-
-                  {/* Reasons */}
-
-                  <div>
-                    <h4 className="text-[10px] font-bold text-[#12244d]">
-                      Why it's a great match
-                    </h4>
-
-                    <div className="mt-2 space-y-1.5">
-                      {software.reasons.map((reason) => (
-                        <div key={reason} className="flex items-start gap-1.5">
-                          <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#e7f7ee]">
-                            <Check className="h-2.5 w-2.5 text-[#239761]" />
-                          </span>
-
-                          <span className="text-[8px] leading-4 text-slate-600">
-                            {reason}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-
-                  <div className="flex flex-col gap-1.5">
-                    <Link
-                      to="/software-directory/zoho-crm"
-                      className="flex h-7 items-center justify-center rounded-md bg-[#1748c8] text-[8px] font-semibold text-white"
-                    >
-                      View Details
-                    </Link>
-
-                    <button
-                      onClick={() => navigate("/software-comparison")}
-                      className="flex h-7 items-center justify-center rounded-md border border-[#9eb6df] text-[8px] font-semibold text-[#1748c8]"
-                    >
-                      Compare
-                    </button>
-
-                    <button className="flex h-7 items-center justify-center gap-1 rounded-md border border-[#9eb6df] text-[8px] font-semibold text-[#1748c8]">
-                      Visit Website
-                      <ExternalLink className="h-3 w-3" />
-                    </button>
-
-                    <button className="mt-0.5 flex items-center justify-center gap-1 text-[8px] text-slate-600">
-                      <Heart className="h-3 w-3" />
-                      Save
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* =======================================================
-            OTHER SOFTWARE + HELP
-        ======================================================= */}
-
-        <section className="mx-auto mt-3 grid max-w-[930px] gap-3 lg:grid-cols-[2fr_1fr]">
-          {/* Other software */}
-
-          <div className="rounded-xl border border-[#e1e7f0] bg-white p-3">
-            <h3 className="text-[9px] font-bold text-[#12244d]">
-              Other software you might consider (4)
-            </h3>
-
-            <div className="mt-2 grid grid-cols-2 gap-2 lg:grid-cols-4">
-              {OTHER_SOFTWARE.map((software) => (
-                <div
-                  key={software.name}
-                  className="flex min-h-[42px] items-center gap-2 rounded-md border border-[#e1e7f0] px-2"
-                >
-                  <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-md bg-slate-50 text-[13px] font-black ${software.className}`}
-                  >
-                    {software.logo}
-                  </span>
-
-                  <div className="min-w-0">
-                    <p className="truncate text-[8px] font-semibold text-[#12244d]">
-                      {software.name}
-                    </p>
-
-                    <p className="text-[7px] text-slate-500">
-                      ⭐ {software.rating}
-                    </p>
-                  </div>
-                </div>
-              ))}
+              {recommendation?.message && (
+                <p className="mt-1 text-[8px] text-slate-500">
+                  {recommendation.message}
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Help */}
+          {topRecommendations.length === 0 ? (
+            <div className="mt-3 rounded-xl border border-[#e1e7f0] bg-white p-8 text-center">
+              <Sparkles className="mx-auto h-8 w-8 text-[#1748c8]" />
 
+              <h3 className="mt-3 text-sm font-bold">
+                No recommendations found
+              </h3>
+
+              <p className="mt-1 text-[9px] text-slate-500">
+                Try changing your answers to find more suitable software.
+              </p>
+
+              <button
+                onClick={() =>
+                  navigate("/recommendation")
+                }
+                className="mt-4 rounded-md bg-[#1748c8] px-4 py-2 text-[9px] font-semibold text-white"
+              >
+                Edit Answers
+              </button>
+            </div>
+          ) : (
+            <div className="mt-3 space-y-3">
+              {topRecommendations.map(
+                (item, index) => {
+                  const score = formatScore(
+                    item.score,
+                  );
+
+                  const matchLabel =
+                    getMatchLabel(score);
+
+                  const reasons =
+                    getReasons(item);
+
+                  const tags =
+                    getTags(item);
+
+                  const software =
+                    item.software;
+
+                  return (
+                    <article
+                      key={`${software.id}-${software.slug}`}
+                      className="relative overflow-hidden rounded-xl border border-[#e1e7f0] bg-white shadow-[0_3px_15px_rgba(30,60,100,0.03)]"
+                    >
+                      {/* Rank */}
+
+                      <div
+                        className={`absolute left-0 top-0 flex h-9 w-9 items-center justify-center rounded-br-lg text-[14px] font-bold text-white ${
+                          index === 0
+                            ? "bg-[#2daf72]"
+                            : "bg-[#95a5bd]"
+                        }`}
+                      >
+                        {item.rank}
+                      </div>
+
+                      <div className="grid gap-4 px-5 py-4 pl-14 lg:grid-cols-[1.7fr_0.65fr_1.4fr_1fr] lg:items-center">
+                        {/* =================================================
+                            SOFTWARE
+                        ================================================= */}
+
+                        <div className="flex min-w-0 items-center gap-3">
+                          <SoftwareLogo
+                            name={software.name}
+                            logo={software.logo}
+                          />
+
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="text-[14px] font-bold text-[#12244d]">
+                                {software.name}
+                              </h3>
+
+                              {index === 0 && (
+                                <span className="rounded-full bg-[#e8f7ef] px-2 py-0.5 text-[7px] font-bold text-[#258858]">
+                                  Best Match
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="mt-1 flex items-center gap-2">
+                              <div className="flex items-center gap-0.5">
+                                {Array.from({
+                                  length: 5,
+                                }).map((_, starIndex) => (
+                                  <Star
+                                    key={starIndex}
+                                    className="h-3 w-3 fill-[#f5a900] text-[#f5a900]"
+                                  />
+                                ))}
+                              </div>
+
+                              <span className="text-[8px] font-semibold">
+                                -
+                              </span>
+
+                              <span className="text-[8px] text-[#1748c8]">
+                                Recommendation #{item.rank}
+                              </span>
+                            </div>
+
+                            <p className="mt-2 max-w-[300px] text-[8px] leading-4 text-slate-500">
+                              {software.description ||
+                                "No description available for this software."}
+                            </p>
+
+                            {/* Tags */}
+
+                            {tags.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {tags.map(
+                                  (tag) => (
+                                    <span
+                                      key={tag}
+                                      className="rounded-full bg-[#f4f7fb] px-2 py-1 text-[7px] font-medium text-slate-600"
+                                    >
+                                      {tag}
+                                    </span>
+                                  ),
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* =================================================
+                            MATCH SCORE
+                        ================================================= */}
+
+                        <div className="border-y border-[#edf1f5] py-3 lg:border-x lg:border-y-0 lg:px-5">
+                          <p className="mb-1 text-center text-[8px] text-slate-500">
+                            Match Score
+                          </p>
+
+                          <MatchScore
+                            score={score}
+                            label={matchLabel}
+                          />
+                        </div>
+
+                        {/* =================================================
+                            REASONS
+                        ================================================= */}
+
+                        <div>
+                          <h4 className="text-[10px] font-bold text-[#12244d]">
+                            Why it's a great match
+                          </h4>
+
+                          <div className="mt-2 space-y-1.5">
+                            {reasons.map(
+                              (reason) => (
+                                <div
+                                  key={reason}
+                                  className="flex items-start gap-1.5"
+                                >
+                                  <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#e7f7ee]">
+                                    <Check className="h-2.5 w-2.5 text-[#239761]" />
+                                  </span>
+
+                                  <span className="text-[8px] leading-4 text-slate-600">
+                                    {reason}
+                                  </span>
+                                </div>
+                              ),
+                            )}
+                          </div>
+                        </div>
+
+                        {/* =================================================
+                            ACTIONS
+                        ================================================= */}
+
+                        <div className="flex flex-col gap-1.5">
+                          <Link
+                            to={`/software-directory/${software.slug}`}
+                            className="flex h-7 items-center justify-center rounded-md bg-[#1748c8] text-[8px] font-semibold text-white"
+                          >
+                            View Details
+                          </Link>
+
+                          <button
+                            onClick={() =>
+                              navigate(
+                                `/software-comparison?software=${software.slug}`,
+                              )
+                            }
+                            className="flex h-7 items-center justify-center rounded-md border border-[#9eb6df] text-[8px] font-semibold text-[#1748c8]"
+                          >
+                            Compare
+                          </button>
+
+                          {software.website_url ? (
+                            <a
+                              href={
+                                software.website_url
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex h-7 items-center justify-center gap-1 rounded-md border border-[#9eb6df] text-[8px] font-semibold text-[#1748c8]"
+                            >
+                              Visit Website
+
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          ) : (
+                            <button
+                              disabled
+                              className="flex h-7 cursor-not-allowed items-center justify-center gap-1 rounded-md border border-[#edf1f5] text-[8px] font-semibold text-slate-300"
+                            >
+                              Website Unavailable
+                            </button>
+                          )}
+
+                          <button className="mt-0.5 flex items-center justify-center gap-1 text-[8px] text-slate-600">
+                            <Heart className="h-3 w-3" />
+                            Save
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                },
+              )}
+            </div>
+          )}
+        </section>
+
+        {/* =======================================================
+            OTHER SOFTWARE
+        ======================================================= */}
+
+        {results.length > 3 && (
+          <section className="mx-auto mt-3 max-w-[930px] rounded-xl border border-[#e1e7f0] bg-white p-3">
+            <h3 className="text-[9px] font-bold text-[#12244d]">
+              Other software you might consider (
+              {results.length - 3}
+              )
+            </h3>
+
+            <div className="mt-2 grid grid-cols-2 gap-2 lg:grid-cols-4">
+              {results
+                .slice(3)
+                .map((item) => (
+                  <Link
+                    key={item.software.id}
+                    to={`/software-directory/${item.software.slug}`}
+                    className="flex min-h-[42px] items-center gap-2 rounded-md border border-[#e1e7f0] px-2 transition hover:border-[#9eb6df]"
+                  >
+                    <SoftwareLogo
+                      name={item.software.name}
+                      logo={item.software.logo}
+                    />
+
+                    <div className="min-w-0">
+                      <p className="truncate text-[8px] font-semibold text-[#12244d]">
+                        {item.software.name}
+                      </p>
+
+                      <p className="text-[7px] text-slate-500">
+                        Match {formatScore(item.score)}%
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+            </div>
+          </section>
+        )}
+
+        {/* =======================================================
+            HELP
+        ======================================================= */}
+
+        <section className="mx-auto mt-3 max-w-[930px]">
           <div className="rounded-xl border border-[#e1e7f0] bg-white p-3">
             <div className="flex items-center gap-3">
               <div className="flex-1">
@@ -683,7 +1098,9 @@ function RecommendationResult() {
                 </button>
               </div>
 
-              <div className="hidden text-4xl lg:block">👩🏻‍💼</div>
+              <div className="hidden text-4xl lg:block">
+                👩🏻‍💼
+              </div>
             </div>
           </div>
         </section>
@@ -701,7 +1118,9 @@ function RecommendationResult() {
             </div>
 
             <div className="flex-1">
-              <p className="text-[9px] font-bold">Compare your top choices</p>
+              <p className="text-[9px] font-bold">
+                Compare your top choices
+              </p>
 
               <p className="text-[7px] text-slate-500">
                 Compare features, pricing, and reviews side by side.
@@ -709,10 +1128,19 @@ function RecommendationResult() {
             </div>
 
             <button
-              onClick={() => navigate("/software-comparison")}
+              onClick={() =>
+                navigate(
+                  "/software-comparison",
+                )
+              }
               className="rounded-md border border-[#9eb6df] px-3 py-1.5 text-[7px] font-semibold text-[#1748c8]"
             >
-              Compare Now (3)
+              Compare Now (
+              {Math.min(
+                topRecommendations.length,
+                3,
+              )}
+              )
             </button>
           </div>
 
@@ -724,7 +1152,9 @@ function RecommendationResult() {
             </div>
 
             <div className="flex-1">
-              <p className="text-[9px] font-bold">Get implementation help</p>
+              <p className="text-[9px] font-bold">
+                Get implementation help
+              </p>
 
               <p className="text-[7px] text-slate-500">
                 Get matched with verified implementation partners.

@@ -50,6 +50,15 @@ export interface SoftwarePricing {
 
   description: string | null;
 
+  pricing_model_id?: number;
+
+  pricing_model?: {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+  };
+
   created_at?: string;
   updated_at?: string;
 }
@@ -81,10 +90,6 @@ export interface SoftwareIntegration {
 /*
 |--------------------------------------------------------------------------
 | Software Review
-|--------------------------------------------------------------------------
-|
-| Backend:
-| status = active | hidden
 |--------------------------------------------------------------------------
 */
 
@@ -132,18 +137,6 @@ export interface SoftwareRating {
 |--------------------------------------------------------------------------
 | Software Rating Summary
 |--------------------------------------------------------------------------
-|
-| Response:
-|
-| GET /api/software-directory/{slug}/ratings
-|
-| {
-|   "average_rating": 2,
-|   "total_ratings": 1,
-|   "user_rating": null
-| }
-|
-|--------------------------------------------------------------------------
 */
 
 export interface SoftwareRatingSummary {
@@ -184,18 +177,6 @@ export interface Software {
 
   reviews?: SoftwareReview[];
 
-  /*
-   * Endpoint detail:
-   *
-   * "ratings": [
-   *   {
-   *     "id": 1,
-   *     "software_id": 1,
-   *     "user_id": 2,
-   *     "rating": 2
-   *   }
-   * ]
-   */
   ratings?: SoftwareRating[];
 
   created_at?: string;
@@ -235,9 +216,117 @@ export interface SoftwareComparisonItem {
 
 /*
 |--------------------------------------------------------------------------
-| Payloads
+| Recommendation
+|--------------------------------------------------------------------------
+|
+| POST /api/v1/recommendations
 |--------------------------------------------------------------------------
 */
+
+export interface RecommendationPayload {
+  category?: string;
+  industry?: string;
+  business_size?: string;
+  pricing?: "free" | "freemium" | "paid" | "custom" | string;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Recommendation Fit Indicators
+|--------------------------------------------------------------------------
+*/
+
+export interface RecommendationFitIndicators {
+  category: boolean;
+  industry: boolean;
+  business_size: boolean;
+  pricing: boolean;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Recommendation Software
+|--------------------------------------------------------------------------
+*/
+
+export interface RecommendationSoftware {
+  id: number;
+
+  name: string;
+
+  slug: string;
+
+  description: string | null;
+
+  website_url: string | null;
+
+  logo: string | null;
+
+  category?: SoftwareCategory;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Recommendation Result
+|--------------------------------------------------------------------------
+*/
+
+export interface RecommendationResult {
+  rank: number;
+
+  score: number | string;
+
+  fit_indicators: RecommendationFitIndicators;
+
+  software: RecommendationSoftware;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Recommendation Session
+|--------------------------------------------------------------------------
+*/
+
+export interface RecommendationSession {
+  id: number;
+
+  session_key: string | null;
+
+  answers: {
+    category?: string;
+    industry?: string;
+    business_size?: string;
+    pricing?: string;
+  };
+
+  completed_at: string | null;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Recommendation Data
+|--------------------------------------------------------------------------
+*/
+
+export interface RecommendationData {
+  session: RecommendationSession;
+
+  results: RecommendationResult[];
+}
+
+/*
+|--------------------------------------------------------------------------
+| Recommendation Response
+|--------------------------------------------------------------------------
+*/
+
+export interface RecommendationResponse {
+  success?: boolean;
+
+  message: string;
+
+  data: RecommendationData;
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -362,113 +451,45 @@ export interface SoftwareComparisonParams {
 |--------------------------------------------------------------------------
 */
 
-/*
-|--------------------------------------------------------------------------
-| Software Response
-|--------------------------------------------------------------------------
-*/
-
 export interface SoftwareResponse {
   message: string;
   data: Software[];
 }
-
-/*
-|--------------------------------------------------------------------------
-| Software Detail Response
-|--------------------------------------------------------------------------
-*/
 
 export interface SoftwareDetailResponse {
   message: string;
   data: Software;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Software Category Response
-|--------------------------------------------------------------------------
-*/
-
 export interface SoftwareCategoryResponse {
   message: string;
   data: SoftwareCategory[];
 }
-
-/*
-|--------------------------------------------------------------------------
-| Software Review Response
-|--------------------------------------------------------------------------
-*/
 
 export interface SoftwareReviewResponse {
   message: string;
   data: SoftwareReview;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Software Reviews Response
-|--------------------------------------------------------------------------
-*/
-
 export interface SoftwareReviewsResponse {
   message: string;
   data: SoftwareReview[];
 }
-
-/*
-|--------------------------------------------------------------------------
-| Software Rating Response
-|--------------------------------------------------------------------------
-*/
 
 export interface SoftwareRatingResponse {
   message: string;
   data: SoftwareRating;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Software Ratings Response
-|--------------------------------------------------------------------------
-|
-| IMPORTANT:
-| Endpoint ini TIDAK mengembalikan array rating.
-|
-| GET /api/software-directory/{slug}/ratings
-|
-| data:
-| {
-|   average_rating: number,
-|   total_ratings: number,
-|   user_rating: number | null
-| }
-|
-|--------------------------------------------------------------------------
-*/
-
 export interface SoftwareRatingsResponse {
   message: string;
   data: SoftwareRatingSummary;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Software Comparison Response
-|--------------------------------------------------------------------------
-*/
-
 export interface SoftwareComparisonResponse {
   message: string;
   data: SoftwareComparisonItem[];
 }
-
-/*
-|--------------------------------------------------------------------------
-| Message Response
-|--------------------------------------------------------------------------
-*/
 
 export interface MessageResponse {
   message: string;
@@ -479,7 +500,7 @@ export interface MessageResponse {
 | Get All Softwares - Protected
 |--------------------------------------------------------------------------
 |
-| GET /api/softwares
+| GET /api/v1/softwares
 |--------------------------------------------------------------------------
 */
 
@@ -494,13 +515,7 @@ export const getSoftwares = async (): Promise<SoftwareResponse> => {
 | Get Public Software Directory
 |--------------------------------------------------------------------------
 |
-| GET /api/software-directory
-|
-| Optional:
-|
-| ?search=figma
-| ?category=design
-| ?search=figma&category=design
+| GET /api/v1/software-directory
 |--------------------------------------------------------------------------
 */
 
@@ -530,9 +545,6 @@ export const getPublicSoftwares = async (
 |--------------------------------------------------------------------------
 | Get Public Software Categories
 |--------------------------------------------------------------------------
-|
-| GET /api/software-categories-public
-|--------------------------------------------------------------------------
 */
 
 export const getPublicSoftwareCategories =
@@ -547,9 +559,6 @@ export const getPublicSoftwareCategories =
 /*
 |--------------------------------------------------------------------------
 | Get Public Software Detail
-|--------------------------------------------------------------------------
-|
-| GET /api/software-directory/{slug}
 |--------------------------------------------------------------------------
 */
 
@@ -569,9 +578,6 @@ export const getPublicSoftwareDetail = async (
 |--------------------------------------------------------------------------
 | Get Public Software Reviews
 |--------------------------------------------------------------------------
-|
-| GET /api/software-directory/{slug}/reviews
-|--------------------------------------------------------------------------
 */
 
 export const getPublicSoftwareReviews = async (
@@ -589,11 +595,6 @@ export const getPublicSoftwareReviews = async (
 /*
 |--------------------------------------------------------------------------
 | Create Software Review
-|--------------------------------------------------------------------------
-|
-| POST /api/software-directory/{slug}/reviews
-|
-| Authentication required.
 |--------------------------------------------------------------------------
 */
 
@@ -615,9 +616,6 @@ export const createSoftwareReview = async (
 |--------------------------------------------------------------------------
 | Update Software Review
 |--------------------------------------------------------------------------
-|
-| PUT /api/software-reviews/{id}
-|--------------------------------------------------------------------------
 */
 
 export const updateSoftwareReview = async (
@@ -636,15 +634,14 @@ export const updateSoftwareReview = async (
 |--------------------------------------------------------------------------
 | Delete Software Review
 |--------------------------------------------------------------------------
-|
-| DELETE /api/software-reviews/{id}
-|--------------------------------------------------------------------------
 */
 
 export const deleteSoftwareReview = async (
   id: number,
 ): Promise<MessageResponse> => {
-  const response = await api.delete<MessageResponse>(`/software-reviews/${id}`);
+  const response = await api.delete<MessageResponse>(
+    `/software-reviews/${id}`,
+  );
 
   return response.data;
 };
@@ -652,20 +649,6 @@ export const deleteSoftwareReview = async (
 /*
 |--------------------------------------------------------------------------
 | Get Public Software Rating Summary
-|--------------------------------------------------------------------------
-|
-| GET /api/software-directory/{slug}/ratings
-|
-| Backend response:
-|
-| {
-|   "message": "Rating software berhasil diambil.",
-|   "data": {
-|     "average_rating": 2,
-|     "total_ratings": 1,
-|     "user_rating": null
-|   }
-| }
 |--------------------------------------------------------------------------
 */
 
@@ -684,11 +667,6 @@ export const getPublicSoftwareRating = async (
 /*
 |--------------------------------------------------------------------------
 | Create Software Rating
-|--------------------------------------------------------------------------
-|
-| POST /api/software-directory/{slug}/ratings
-|
-| Authentication required.
 |--------------------------------------------------------------------------
 */
 
@@ -710,9 +688,6 @@ export const createSoftwareRating = async (
 |--------------------------------------------------------------------------
 | Update Software Rating
 |--------------------------------------------------------------------------
-|
-| PUT /api/software-ratings/{id}
-|--------------------------------------------------------------------------
 */
 
 export const updateSoftwareRating = async (
@@ -731,15 +706,14 @@ export const updateSoftwareRating = async (
 |--------------------------------------------------------------------------
 | Delete Software Rating
 |--------------------------------------------------------------------------
-|
-| DELETE /api/software-ratings/{id}
-|--------------------------------------------------------------------------
 */
 
 export const deleteSoftwareRating = async (
   id: number,
 ): Promise<MessageResponse> => {
-  const response = await api.delete<MessageResponse>(`/software-ratings/${id}`);
+  const response = await api.delete<MessageResponse>(
+    `/software-ratings/${id}`,
+  );
 
   return response.data;
 };
@@ -749,22 +723,16 @@ export const deleteSoftwareRating = async (
 | Get Software Comparison
 |--------------------------------------------------------------------------
 |
-| GET /api/software-comparison
-|
-| Example:
-|
-| ?software[]=figma
-| &software[]=trello
-|
-| Minimal : 2
-| Maksimal : 4
+| GET /api/v1/software-comparison
 |--------------------------------------------------------------------------
 */
 
 export const getSoftwareComparison = async (
   softwareSlugs: string[],
 ): Promise<SoftwareComparisonResponse> => {
-  const cleanedSlugs = softwareSlugs.map((slug) => slug.trim()).filter(Boolean);
+  const cleanedSlugs = softwareSlugs
+    .map((slug) => slug.trim())
+    .filter(Boolean);
 
   if (cleanedSlugs.length < 2) {
     throw new Error("Minimal pilih 2 software untuk dibandingkan.");
@@ -790,9 +758,6 @@ export const getSoftwareComparison = async (
 |--------------------------------------------------------------------------
 | Get Software Detail - Protected
 |--------------------------------------------------------------------------
-|
-| GET /api/softwares/{id}
-|--------------------------------------------------------------------------
 */
 
 export const getSoftware = async (
@@ -807,9 +772,6 @@ export const getSoftware = async (
 |--------------------------------------------------------------------------
 | Create Software
 |--------------------------------------------------------------------------
-|
-| POST /api/softwares
-|--------------------------------------------------------------------------
 */
 
 export const createSoftware = async (
@@ -823,9 +785,6 @@ export const createSoftware = async (
 /*
 |--------------------------------------------------------------------------
 | Update Software
-|--------------------------------------------------------------------------
-|
-| PUT /api/softwares/{id}
 |--------------------------------------------------------------------------
 */
 
@@ -845,13 +804,84 @@ export const updateSoftware = async (
 |--------------------------------------------------------------------------
 | Delete Software
 |--------------------------------------------------------------------------
+*/
+
+export const deleteSoftware = async (
+  id: number,
+): Promise<MessageResponse> => {
+  const response = await api.delete<MessageResponse>(`/softwares/${id}`);
+
+  return response.data;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Create Software Recommendation
+|--------------------------------------------------------------------------
 |
-| DELETE /api/softwares/{id}
+| POST /api/v1/recommendations
+|
+| Backend example:
+|
+| {
+|   "category": "design",
+|   "industry": "technology",
+|   "business_size": "small-business",
+|   "pricing": "free"
+| }
 |--------------------------------------------------------------------------
 */
 
-export const deleteSoftware = async (id: number): Promise<MessageResponse> => {
-  const response = await api.delete<MessageResponse>(`/softwares/${id}`);
+export const createRecommendation = async (
+  data: RecommendationPayload,
+): Promise<RecommendationResponse> => {
+  /*
+  |--------------------------------------------------------------------------
+  | Clean Payload
+  |--------------------------------------------------------------------------
+  */
+
+  const cleanedData = Object.fromEntries(
+    Object.entries(data).filter(
+      ([, value]) =>
+        value !== undefined &&
+        value !== null &&
+        String(value).trim() !== "",
+    ),
+  ) as RecommendationPayload;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Validate Minimal One Criteria
+  |--------------------------------------------------------------------------
+  */
+
+  if (Object.keys(cleanedData).length === 0) {
+    throw new Error(
+      "Minimal satu kriteria recommendation harus diisi.",
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Request
+  |--------------------------------------------------------------------------
+  |
+  | api.ts baseURL:
+  |
+  | http://127.0.0.1:8000/api
+  |
+  | Final endpoint:
+  |
+  | http://127.0.0.1:8000/api/v1/recommendations
+  |
+  |--------------------------------------------------------------------------
+  */
+
+  const response = await api.post<RecommendationResponse>(
+    "/v1/recommendations",
+    cleanedData,
+  );
 
   return response.data;
 };
